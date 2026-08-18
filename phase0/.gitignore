@@ -1,0 +1,50 @@
+runs/
+data/locomo/locomo10.json
+data/locomo/hierstore.sqlite
+data/user_dir_snap/hierstore.sqlite
+data/user_dir_snap/place_tasks_from_snap.jsonl
+data/user_dir_snap/skipped.jsonl
+data/user_dir_snap/META.json
+data/sft_placer/
+data/multitree_synth_smoke/
+data/confusable_tree/hierstore.sqlite
+__pycache__/
+*.pyc
+.env
+
+# corpus B/A': third-party vault/repo clones and any rendered dataset that
+# bakes their note text into training rows. The manifests
+# (data/vaults_manifest.json, data/vaultsA_manifest.json) and the build
+# scripts are what we publish; other people's note text is not ours to
+# redistribute, in any form (raw clone, built split, or SFT export).
+data/vaults_raw/
+data/vaults_build/
+data/vaultsA_raw/
+data/vaultsA_build/
+data/sft_placer_vaultB_item/
+data/sft_placer_vaultB_fold/
+data/sft_placer_vaultsA_item/
+data/annotation_sample_A.json
+data/mine-results-corrected.json
+
+# corpus A itself: the user's own private working directory. Full note
+# text, hierstore.sqlite, and sources.json (which leaks local filesystem
+# paths / username) all live in here. Aggregate stats are already reported
+# in PLACER_FINDINGS.md and the paper; the raw dataset is not published.
+data/user_dir_snap/
+data/user_dir_snap_v2/
+data/fireworks_placer_userdir_v2/
+data/fireworks_placer_userdir_v2_fold/
+
+# LoCoMo is a third-party benchmark; don't redistribute a local cache of it.
+data/locomo/
+
+# tool caches and LaTeX build byproducts
+.gstack/
+paper/*.log
+paper/*.blg
+paper/*.bbl
+paper/*.aux
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.out
