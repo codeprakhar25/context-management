@@ -1,0 +1,18 @@
+{
+  "tree_id": "robot_v0",
+  "roots": [
+    "robotics",
+    "field",
+    "inbox"
+  ],
+  "holdout_tree": false,
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "perception",
+    "control"
+  ],
+  "db": "data/multitree_synth_mid_hard/robot_v0/hierstore.sqlite"
+}

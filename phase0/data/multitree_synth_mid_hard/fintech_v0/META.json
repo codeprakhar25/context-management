@@ -1,0 +1,18 @@
+{
+  "tree_id": "fintech_v0",
+  "roots": [
+    "product",
+    "risk",
+    "dump"
+  ],
+  "holdout_tree": false,
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "payments",
+    "ledger"
+  ],
+  "db": "data/multitree_synth_mid_hard/fintech_v0/hierstore.sqlite"
+}

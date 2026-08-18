@@ -1,0 +1,18 @@
+{
+  "tree_id": "clinic_v0",
+  "roots": [
+    "clinic",
+    "admin",
+    "scratch"
+  ],
+  "holdout_tree": false,
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "cards",
+    "labs"
+  ],
+  "db": "data/multitree_synth_mid_hard/clinic_v0/hierstore.sqlite"
+}

@@ -1,0 +1,18 @@
+{
+  "tree_id": "farm_v0",
+  "roots": [
+    "crops",
+    "barn",
+    "notes"
+  ],
+  "holdout_tree": false,
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "corn",
+    "cattle"
+  ],
+  "db": "data/multitree_synth_mid_hard/farm_v0/hierstore.sqlite"
+}

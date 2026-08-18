@@ -1,0 +1,18 @@
+{
+  "tree_id": "agtech_v0",
+  "roots": [
+    "fields",
+    "lab",
+    "notes"
+  ],
+  "holdout_tree": false,
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "sensors",
+    "irrigation"
+  ],
+  "db": "data/multitree_synth_mid_hard/agtech_v0/hierstore.sqlite"
+}
