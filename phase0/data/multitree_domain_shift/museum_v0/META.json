@@ -1,0 +1,13 @@
+{
+  "tree_id": "museum_v0",
+  "roots": [
+    "exhibits",
+    "ops",
+    "vault"
+  ],
+  "holdout_tree": false,
+  "n_facts": 24,
+  "n_dirs": 14,
+  "n_place_tasks": 24,
+  "db": "data/multitree_domain_shift/museum_v0/hierstore.sqlite"
+}

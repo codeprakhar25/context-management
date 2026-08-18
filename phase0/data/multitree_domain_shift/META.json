@@ -1,0 +1,716 @@
+{
+  "n_trees": 50,
+  "train_trees": [
+    "lab_v0",
+    "studio_v0",
+    "clinic_v0",
+    "shop_v0",
+    "game_v0",
+    "news_v0",
+    "robot_v0",
+    "edu_v0",
+    "fintech_v0",
+    "kitchen_v0",
+    "legal_v0",
+    "farm_v0",
+    "museum_v0",
+    "airline_v0",
+    "biotech_v0",
+    "podcast_v0",
+    "nonprofit_v0",
+    "construction_v0",
+    "sports_v0",
+    "pharmacy_v0",
+    "architecture_v0",
+    "security_v0",
+    "energy_v0",
+    "fashion_v0",
+    "film_v0",
+    "hotel_v0",
+    "transit_v0",
+    "insurance_v0",
+    "space_v0",
+    "music_v0",
+    "civic_v0",
+    "mining_v0",
+    "marine_v0",
+    "telecom_v0",
+    "agtech_v0",
+    "esports_v0",
+    "bakery_v0",
+    "zoo_v0",
+    "library_v0",
+    "court_v0"
+  ],
+  "holdout_trees": [
+    "brewing_v0",
+    "cloud_v0",
+    "cycling_v0",
+    "drone_v0",
+    "ngo_aid_v0",
+    "railfreight_v0",
+    "semicon_v0",
+    "theater_v0",
+    "vet_v0",
+    "weather_v0"
+  ],
+  "n_place_train": 960,
+  "n_place_holdout": 240,
+  "n_facts_total": 1200,
+  "seed": 13,
+  "variant": "domain_shift_markdown",
+  "exact_text_overlap_train_holdout": 0,
+  "lock": "B+D; domain-shift toward user-dir style; never train on user snap",
+  "trees": [
+    {
+      "tree_id": "lab_v0",
+      "roots": [
+        "lab",
+        "life",
+        "dump"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/lab_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "studio_v0",
+      "roots": [
+        "studio",
+        "home",
+        "inbox"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/studio_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "clinic_v0",
+      "roots": [
+        "clinic",
+        "admin",
+        "scratch"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/clinic_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "shop_v0",
+      "roots": [
+        "shop",
+        "personal",
+        "misc"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/shop_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "game_v0",
+      "roots": [
+        "game",
+        "team",
+        "backlog"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/game_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "news_v0",
+      "roots": [
+        "newsroom",
+        "desk",
+        "wire"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/news_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "robot_v0",
+      "roots": [
+        "robotics",
+        "field",
+        "inbox"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/robot_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "edu_v0",
+      "roots": [
+        "course",
+        "research",
+        "inbox"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/edu_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "fintech_v0",
+      "roots": [
+        "product",
+        "risk",
+        "dump"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/fintech_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "kitchen_v0",
+      "roots": [
+        "kitchen",
+        "front",
+        "notes"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/kitchen_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "legal_v0",
+      "roots": [
+        "matters",
+        "admin",
+        "inbox"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/legal_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "farm_v0",
+      "roots": [
+        "crops",
+        "barn",
+        "notes"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/farm_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "museum_v0",
+      "roots": [
+        "exhibits",
+        "ops",
+        "vault"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/museum_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "airline_v0",
+      "roots": [
+        "flight",
+        "ground",
+        "misc"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/airline_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "biotech_v0",
+      "roots": [
+        "lab",
+        "clinic",
+        "dump"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/biotech_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "podcast_v0",
+      "roots": [
+        "show",
+        "biz",
+        "inbox"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/podcast_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "nonprofit_v0",
+      "roots": [
+        "programs",
+        "ops",
+        "scratch"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/nonprofit_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "construction_v0",
+      "roots": [
+        "sites",
+        "office",
+        "misc"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/construction_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "sports_v0",
+      "roots": [
+        "team",
+        "front",
+        "inbox"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/sports_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "pharmacy_v0",
+      "roots": [
+        "rx",
+        "store",
+        "notes"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/pharmacy_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "architecture_v0",
+      "roots": [
+        "projects",
+        "studio",
+        "inbox"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/architecture_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "security_v0",
+      "roots": [
+        "soc",
+        "eng",
+        "dump"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/security_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "energy_v0",
+      "roots": [
+        "plant",
+        "grid",
+        "misc"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/energy_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "fashion_v0",
+      "roots": [
+        "line",
+        "atelier",
+        "inbox"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/fashion_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "film_v0",
+      "roots": [
+        "prod",
+        "post",
+        "notes"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/film_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "hotel_v0",
+      "roots": [
+        "rooms",
+        "fnb",
+        "misc"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/hotel_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "transit_v0",
+      "roots": [
+        "rail",
+        "bus",
+        "inbox"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/transit_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "insurance_v0",
+      "roots": [
+        "claims",
+        "uw",
+        "dump"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/insurance_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "space_v0",
+      "roots": [
+        "mission",
+        "ground",
+        "scratch"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/space_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "music_v0",
+      "roots": [
+        "label",
+        "tour",
+        "inbox"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/music_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "civic_v0",
+      "roots": [
+        "city",
+        "public",
+        "notes"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/civic_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "mining_v0",
+      "roots": [
+        "pit",
+        "plant",
+        "misc"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/mining_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "marine_v0",
+      "roots": [
+        "fleet",
+        "port",
+        "inbox"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/marine_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "telecom_v0",
+      "roots": [
+        "network",
+        "care",
+        "dump"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/telecom_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "agtech_v0",
+      "roots": [
+        "fields",
+        "lab",
+        "notes"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/agtech_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "esports_v0",
+      "roots": [
+        "org",
+        "content",
+        "inbox"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/esports_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "bakery_v0",
+      "roots": [
+        "bake",
+        "front",
+        "misc"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/bakery_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "zoo_v0",
+      "roots": [
+        "animals",
+        "ops",
+        "notes"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/zoo_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "library_v0",
+      "roots": [
+        "stacks",
+        "programs",
+        "inbox"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/library_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "court_v0",
+      "roots": [
+        "dockets",
+        "clerk",
+        "misc"
+      ],
+      "holdout_tree": false,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/court_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "weather_v0",
+      "roots": [
+        "forecast",
+        "obs",
+        "inbox"
+      ],
+      "holdout_tree": true,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/weather_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "drone_v0",
+      "roots": [
+        "fleet",
+        "ops",
+        "dump"
+      ],
+      "holdout_tree": true,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/drone_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "brewing_v0",
+      "roots": [
+        "brew",
+        "tap",
+        "notes"
+      ],
+      "holdout_tree": true,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/brewing_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "railfreight_v0",
+      "roots": [
+        "yard",
+        "dispatch",
+        "misc"
+      ],
+      "holdout_tree": true,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/railfreight_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "semicon_v0",
+      "roots": [
+        "fab",
+        "test",
+        "inbox"
+      ],
+      "holdout_tree": true,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/semicon_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "ngo_aid_v0",
+      "roots": [
+        "field",
+        "hq",
+        "scratch"
+      ],
+      "holdout_tree": true,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/ngo_aid_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "theater_v0",
+      "roots": [
+        "stage",
+        "box",
+        "inbox"
+      ],
+      "holdout_tree": true,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/theater_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "vet_v0",
+      "roots": [
+        "clinic",
+        "kennel",
+        "notes"
+      ],
+      "holdout_tree": true,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/vet_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "cycling_v0",
+      "roots": [
+        "race",
+        "shop",
+        "misc"
+      ],
+      "holdout_tree": true,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/cycling_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "cloud_v0",
+      "roots": [
+        "platform",
+        "sre",
+        "dump"
+      ],
+      "holdout_tree": true,
+      "n_facts": 24,
+      "n_dirs": 14,
+      "n_place_tasks": 24,
+      "db": "data/multitree_domain_shift/cloud_v0/hierstore.sqlite"
+    }
+  ]
+}

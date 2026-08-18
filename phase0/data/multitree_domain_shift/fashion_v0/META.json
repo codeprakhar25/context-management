@@ -1,0 +1,13 @@
+{
+  "tree_id": "fashion_v0",
+  "roots": [
+    "line",
+    "atelier",
+    "inbox"
+  ],
+  "holdout_tree": false,
+  "n_facts": 24,
+  "n_dirs": 14,
+  "n_place_tasks": 24,
+  "db": "data/multitree_domain_shift/fashion_v0/hierstore.sqlite"
+}

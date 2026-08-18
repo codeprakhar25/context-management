@@ -1,0 +1,13 @@
+{
+  "tree_id": "weather_v0",
+  "roots": [
+    "forecast",
+    "obs",
+    "inbox"
+  ],
+  "holdout_tree": true,
+  "n_facts": 24,
+  "n_dirs": 14,
+  "n_place_tasks": 24,
+  "db": "data/multitree_domain_shift/weather_v0/hierstore.sqlite"
+}

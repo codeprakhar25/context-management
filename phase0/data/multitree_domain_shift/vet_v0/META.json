@@ -1,0 +1,13 @@
+{
+  "tree_id": "vet_v0",
+  "roots": [
+    "clinic",
+    "kennel",
+    "notes"
+  ],
+  "holdout_tree": true,
+  "n_facts": 24,
+  "n_dirs": 14,
+  "n_place_tasks": 24,
+  "db": "data/multitree_domain_shift/vet_v0/hierstore.sqlite"
+}
