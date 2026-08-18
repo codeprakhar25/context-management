@@ -1,0 +1,30 @@
+{
+  "n": 240,
+  "n_dev": 190,
+  "n_test": 50,
+  "types": [
+    "condition",
+    "dupe",
+    "new_topic",
+    "supersede"
+  ],
+  "by_type": {
+    "condition": 60,
+    "dupe": 60,
+    "new_topic": 60,
+    "supersede": 60
+  },
+  "by_domain": {
+    "pkgmgr": 40,
+    "datastore": 40,
+    "platform": 40,
+    "standup": 40,
+    "evalsplit": 40,
+    "mergerule": 40
+  },
+  "scope": "same-project (condition carried in text)",
+  "gold_supersede": "DELETE+ADD",
+  "unique_incoming_texts": 219,
+  "cases_sha256_16": "441818999a3cf785",
+  "seed": 11
+}
