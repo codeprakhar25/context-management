@@ -1,0 +1,4 @@
+{"id": "seed_buddy", "text": "Andrew adopted a dog named Buddy from a shelter.", "project": "conv-demo", "path": ["project", "conv-demo"], "kind": "claim", "t": "2026-01-01T00:00:00Z"}
+{"id": "seed_city", "text": "Caroline lives in Seattle.", "project": "conv-demo", "path": ["project", "conv-demo"], "kind": "claim", "t": "2026-01-01T00:00:00Z"}
+{"id": "seed_job", "text": "Melanie works as a nurse.", "project": "conv-demo", "path": ["project", "conv-demo"], "kind": "claim", "t": "2026-01-01T00:00:00Z"}
+{"id": "seed_other_proj", "text": "F1 score on the retrieval task is 0.50.", "project": "slm-lab", "path": ["project", "slm-lab"], "kind": "claim", "t": "2026-01-01T00:00:00Z"}
