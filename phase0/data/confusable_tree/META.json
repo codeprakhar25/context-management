@@ -1,0 +1,15 @@
+{
+  "db": "/home/prakh/ml-resarch/context-management/phase0/data/confusable_tree/hierstore.sqlite",
+  "n_facts": 21,
+  "n_queries": 20,
+  "roots": [
+    "work",
+    "personal",
+    "inbox"
+  ],
+  "projects": [
+    "slm-lab",
+    "clothing-fit"
+  ],
+  "note": "Near-duplicate + identical-text twins; questions omit project name"
+}
