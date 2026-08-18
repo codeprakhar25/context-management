@@ -1,0 +1,17 @@
+{
+  "tree_id": "space_v0",
+  "roots": [
+    "mission",
+    "ground",
+    "scratch"
+  ],
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "avionics",
+    "payload"
+  ],
+  "db": "data/multitree_synth_mid/space_v0/hierstore.sqlite"
+}

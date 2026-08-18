@@ -1,0 +1,17 @@
+{
+  "tree_id": "film_v0",
+  "roots": [
+    "prod",
+    "post",
+    "notes"
+  ],
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "camera",
+    "sound"
+  ],
+  "db": "data/multitree_synth_mid/film_v0/hierstore.sqlite"
+}

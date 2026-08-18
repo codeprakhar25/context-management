@@ -1,0 +1,17 @@
+{
+  "tree_id": "game_v0",
+  "roots": [
+    "game",
+    "team",
+    "backlog"
+  ],
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "engine",
+    "art"
+  ],
+  "db": "data/multitree_synth_mid/game_v0/hierstore.sqlite"
+}

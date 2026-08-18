@@ -1,0 +1,915 @@
+{
+  "n_trees": 50,
+  "train_trees": [
+    "lab_v0",
+    "studio_v0",
+    "clinic_v0",
+    "shop_v0",
+    "game_v0",
+    "news_v0",
+    "robot_v0",
+    "edu_v0",
+    "fintech_v0",
+    "kitchen_v0",
+    "legal_v0",
+    "farm_v0",
+    "museum_v0",
+    "airline_v0",
+    "biotech_v0",
+    "podcast_v0",
+    "nonprofit_v0",
+    "construction_v0",
+    "sports_v0",
+    "pharmacy_v0",
+    "architecture_v0",
+    "security_v0",
+    "energy_v0",
+    "fashion_v0",
+    "film_v0",
+    "hotel_v0",
+    "transit_v0",
+    "insurance_v0",
+    "space_v0",
+    "music_v0",
+    "civic_v0",
+    "mining_v0",
+    "marine_v0",
+    "telecom_v0",
+    "agtech_v0",
+    "esports_v0",
+    "bakery_v0",
+    "zoo_v0",
+    "library_v0",
+    "court_v0"
+  ],
+  "holdout_trees": [
+    "brewing_v0",
+    "cloud_v0",
+    "cycling_v0",
+    "drone_v0",
+    "ngo_aid_v0",
+    "railfreight_v0",
+    "semicon_v0",
+    "theater_v0",
+    "vet_v0",
+    "weather_v0"
+  ],
+  "n_place_train": 1200,
+  "n_place_holdout": 300,
+  "n_twin_queries": 800,
+  "n_facts_total": 1700,
+  "seed": 7,
+  "lock": "B research + D synth-train / soft+subtree eval; user-dir transfer later",
+  "trees": [
+    {
+      "tree_id": "lab_v0",
+      "roots": [
+        "lab",
+        "life",
+        "dump"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "vision",
+        "nlp"
+      ],
+      "db": "data/multitree_synth_mid/lab_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "studio_v0",
+      "roots": [
+        "studio",
+        "home",
+        "inbox"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "design",
+        "code"
+      ],
+      "db": "data/multitree_synth_mid/studio_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "clinic_v0",
+      "roots": [
+        "clinic",
+        "admin",
+        "scratch"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "cards",
+        "labs"
+      ],
+      "db": "data/multitree_synth_mid/clinic_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "shop_v0",
+      "roots": [
+        "shop",
+        "personal",
+        "misc"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "inventory",
+        "support"
+      ],
+      "db": "data/multitree_synth_mid/shop_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "game_v0",
+      "roots": [
+        "game",
+        "team",
+        "backlog"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "engine",
+        "art"
+      ],
+      "db": "data/multitree_synth_mid/game_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "news_v0",
+      "roots": [
+        "newsroom",
+        "desk",
+        "wire"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "politics",
+        "tech"
+      ],
+      "db": "data/multitree_synth_mid/news_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "robot_v0",
+      "roots": [
+        "robotics",
+        "field",
+        "inbox"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "perception",
+        "control"
+      ],
+      "db": "data/multitree_synth_mid/robot_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "edu_v0",
+      "roots": [
+        "course",
+        "research",
+        "inbox"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "lectures",
+        "homework"
+      ],
+      "db": "data/multitree_synth_mid/edu_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "fintech_v0",
+      "roots": [
+        "product",
+        "risk",
+        "dump"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "payments",
+        "ledger"
+      ],
+      "db": "data/multitree_synth_mid/fintech_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "kitchen_v0",
+      "roots": [
+        "kitchen",
+        "front",
+        "notes"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "menu",
+        "suppliers"
+      ],
+      "db": "data/multitree_synth_mid/kitchen_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "legal_v0",
+      "roots": [
+        "matters",
+        "admin",
+        "inbox"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "litigation",
+        "contracts"
+      ],
+      "db": "data/multitree_synth_mid/legal_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "farm_v0",
+      "roots": [
+        "crops",
+        "barn",
+        "notes"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "corn",
+        "cattle"
+      ],
+      "db": "data/multitree_synth_mid/farm_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "museum_v0",
+      "roots": [
+        "exhibits",
+        "ops",
+        "vault"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "modern",
+        "ancient"
+      ],
+      "db": "data/multitree_synth_mid/museum_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "airline_v0",
+      "roots": [
+        "flight",
+        "ground",
+        "misc"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "crew",
+        "routes"
+      ],
+      "db": "data/multitree_synth_mid/airline_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "biotech_v0",
+      "roots": [
+        "lab",
+        "clinic",
+        "dump"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "assays",
+        "animals"
+      ],
+      "db": "data/multitree_synth_mid/biotech_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "podcast_v0",
+      "roots": [
+        "show",
+        "biz",
+        "inbox"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "episodes",
+        "guests"
+      ],
+      "db": "data/multitree_synth_mid/podcast_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "nonprofit_v0",
+      "roots": [
+        "programs",
+        "ops",
+        "scratch"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "youth",
+        "housing"
+      ],
+      "db": "data/multitree_synth_mid/nonprofit_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "construction_v0",
+      "roots": [
+        "sites",
+        "office",
+        "misc"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "plumbing",
+        "electrical"
+      ],
+      "db": "data/multitree_synth_mid/construction_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "sports_v0",
+      "roots": [
+        "team",
+        "front",
+        "inbox"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "offense",
+        "defense"
+      ],
+      "db": "data/multitree_synth_mid/sports_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "pharmacy_v0",
+      "roots": [
+        "rx",
+        "store",
+        "notes"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "compounding",
+        "retail"
+      ],
+      "db": "data/multitree_synth_mid/pharmacy_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "architecture_v0",
+      "roots": [
+        "projects",
+        "studio",
+        "inbox"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "residential",
+        "civic"
+      ],
+      "db": "data/multitree_synth_mid/architecture_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "security_v0",
+      "roots": [
+        "soc",
+        "eng",
+        "dump"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "detect",
+        "respond"
+      ],
+      "db": "data/multitree_synth_mid/security_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "energy_v0",
+      "roots": [
+        "plant",
+        "grid",
+        "misc"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "turbine",
+        "storage"
+      ],
+      "db": "data/multitree_synth_mid/energy_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "fashion_v0",
+      "roots": [
+        "line",
+        "atelier",
+        "inbox"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "design",
+        "fabric"
+      ],
+      "db": "data/multitree_synth_mid/fashion_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "film_v0",
+      "roots": [
+        "prod",
+        "post",
+        "notes"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "camera",
+        "sound"
+      ],
+      "db": "data/multitree_synth_mid/film_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "hotel_v0",
+      "roots": [
+        "rooms",
+        "fnb",
+        "misc"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "front",
+        "housekeeping"
+      ],
+      "db": "data/multitree_synth_mid/hotel_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "transit_v0",
+      "roots": [
+        "rail",
+        "bus",
+        "inbox"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "signals",
+        "rolling"
+      ],
+      "db": "data/multitree_synth_mid/transit_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "insurance_v0",
+      "roots": [
+        "claims",
+        "uw",
+        "dump"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "auto",
+        "home"
+      ],
+      "db": "data/multitree_synth_mid/insurance_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "space_v0",
+      "roots": [
+        "mission",
+        "ground",
+        "scratch"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "avionics",
+        "payload"
+      ],
+      "db": "data/multitree_synth_mid/space_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "music_v0",
+      "roots": [
+        "label",
+        "tour",
+        "inbox"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "aandr",
+        "mastering"
+      ],
+      "db": "data/multitree_synth_mid/music_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "civic_v0",
+      "roots": [
+        "city",
+        "public",
+        "notes"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "zoning",
+        "transit"
+      ],
+      "db": "data/multitree_synth_mid/civic_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "mining_v0",
+      "roots": [
+        "pit",
+        "plant",
+        "misc"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "drill",
+        "haul"
+      ],
+      "db": "data/multitree_synth_mid/mining_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "marine_v0",
+      "roots": [
+        "fleet",
+        "port",
+        "inbox"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "cargo",
+        "crew"
+      ],
+      "db": "data/multitree_synth_mid/marine_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "telecom_v0",
+      "roots": [
+        "network",
+        "care",
+        "dump"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "core",
+        "radio"
+      ],
+      "db": "data/multitree_synth_mid/telecom_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "agtech_v0",
+      "roots": [
+        "fields",
+        "lab",
+        "notes"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "sensors",
+        "irrigation"
+      ],
+      "db": "data/multitree_synth_mid/agtech_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "esports_v0",
+      "roots": [
+        "org",
+        "content",
+        "inbox"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "players",
+        "coaching"
+      ],
+      "db": "data/multitree_synth_mid/esports_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "bakery_v0",
+      "roots": [
+        "bake",
+        "front",
+        "misc"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "bread",
+        "pastry"
+      ],
+      "db": "data/multitree_synth_mid/bakery_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "zoo_v0",
+      "roots": [
+        "animals",
+        "ops",
+        "notes"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "mammals",
+        "birds"
+      ],
+      "db": "data/multitree_synth_mid/zoo_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "library_v0",
+      "roots": [
+        "stacks",
+        "programs",
+        "inbox"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "fiction",
+        "ref"
+      ],
+      "db": "data/multitree_synth_mid/library_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "court_v0",
+      "roots": [
+        "dockets",
+        "clerk",
+        "misc"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "civil",
+        "criminal"
+      ],
+      "db": "data/multitree_synth_mid/court_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "weather_v0",
+      "roots": [
+        "forecast",
+        "obs",
+        "inbox"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "models",
+        "radar"
+      ],
+      "db": "data/multitree_synth_mid/weather_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "drone_v0",
+      "roots": [
+        "fleet",
+        "ops",
+        "dump"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "mapping",
+        "delivery"
+      ],
+      "db": "data/multitree_synth_mid/drone_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "brewing_v0",
+      "roots": [
+        "brew",
+        "tap",
+        "notes"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "lager",
+        "ipa"
+      ],
+      "db": "data/multitree_synth_mid/brewing_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "railfreight_v0",
+      "roots": [
+        "yard",
+        "dispatch",
+        "misc"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "intermodal",
+        "bulk"
+      ],
+      "db": "data/multitree_synth_mid/railfreight_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "semicon_v0",
+      "roots": [
+        "fab",
+        "test",
+        "inbox"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "litho",
+        "etch"
+      ],
+      "db": "data/multitree_synth_mid/semicon_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "ngo_aid_v0",
+      "roots": [
+        "field",
+        "hq",
+        "scratch"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "wash",
+        "health"
+      ],
+      "db": "data/multitree_synth_mid/ngo_aid_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "theater_v0",
+      "roots": [
+        "stage",
+        "box",
+        "inbox"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "sets",
+        "lighting"
+      ],
+      "db": "data/multitree_synth_mid/theater_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "vet_v0",
+      "roots": [
+        "clinic",
+        "kennel",
+        "notes"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "surgery",
+        "dental"
+      ],
+      "db": "data/multitree_synth_mid/vet_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "cycling_v0",
+      "roots": [
+        "race",
+        "shop",
+        "misc"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "road",
+        "mtb"
+      ],
+      "db": "data/multitree_synth_mid/cycling_v0/hierstore.sqlite"
+    },
+    {
+      "tree_id": "cloud_v0",
+      "roots": [
+        "platform",
+        "sre",
+        "dump"
+      ],
+      "n_facts": 34,
+      "n_dirs": 11,
+      "n_place_tasks": 30,
+      "n_twin_queries": 16,
+      "twin_areas": [
+        "compute",
+        "storage"
+      ],
+      "db": "data/multitree_synth_mid/cloud_v0/hierstore.sqlite"
+    }
+  ]
+}

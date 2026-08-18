@@ -1,0 +1,17 @@
+{
+  "tree_id": "energy_v0",
+  "roots": [
+    "plant",
+    "grid",
+    "misc"
+  ],
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "turbine",
+    "storage"
+  ],
+  "db": "data/multitree_synth_mid/energy_v0/hierstore.sqlite"
+}

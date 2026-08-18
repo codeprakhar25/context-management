@@ -1,0 +1,17 @@
+{
+  "tree_id": "sports_v0",
+  "roots": [
+    "team",
+    "front",
+    "inbox"
+  ],
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "offense",
+    "defense"
+  ],
+  "db": "data/multitree_synth_mid/sports_v0/hierstore.sqlite"
+}

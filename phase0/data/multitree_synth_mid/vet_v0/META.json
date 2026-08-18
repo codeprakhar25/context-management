@@ -1,0 +1,17 @@
+{
+  "tree_id": "vet_v0",
+  "roots": [
+    "clinic",
+    "kennel",
+    "notes"
+  ],
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "surgery",
+    "dental"
+  ],
+  "db": "data/multitree_synth_mid/vet_v0/hierstore.sqlite"
+}

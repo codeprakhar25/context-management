@@ -1,0 +1,17 @@
+{
+  "tree_id": "cloud_v0",
+  "roots": [
+    "platform",
+    "sre",
+    "dump"
+  ],
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "compute",
+    "storage"
+  ],
+  "db": "data/multitree_synth_mid/cloud_v0/hierstore.sqlite"
+}

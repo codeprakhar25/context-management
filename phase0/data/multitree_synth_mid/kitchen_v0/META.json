@@ -1,0 +1,17 @@
+{
+  "tree_id": "kitchen_v0",
+  "roots": [
+    "kitchen",
+    "front",
+    "notes"
+  ],
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "menu",
+    "suppliers"
+  ],
+  "db": "data/multitree_synth_mid/kitchen_v0/hierstore.sqlite"
+}

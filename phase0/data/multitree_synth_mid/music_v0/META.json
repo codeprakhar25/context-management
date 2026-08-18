@@ -1,0 +1,17 @@
+{
+  "tree_id": "music_v0",
+  "roots": [
+    "label",
+    "tour",
+    "inbox"
+  ],
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "aandr",
+    "mastering"
+  ],
+  "db": "data/multitree_synth_mid/music_v0/hierstore.sqlite"
+}

@@ -1,0 +1,17 @@
+{
+  "tree_id": "bakery_v0",
+  "roots": [
+    "bake",
+    "front",
+    "misc"
+  ],
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "bread",
+    "pastry"
+  ],
+  "db": "data/multitree_synth_mid/bakery_v0/hierstore.sqlite"
+}

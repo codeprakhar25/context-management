@@ -1,0 +1,17 @@
+{
+  "tree_id": "edu_v0",
+  "roots": [
+    "course",
+    "research",
+    "inbox"
+  ],
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "lectures",
+    "homework"
+  ],
+  "db": "data/multitree_synth_mid/edu_v0/hierstore.sqlite"
+}

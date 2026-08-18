@@ -1,0 +1,17 @@
+{
+  "tree_id": "transit_v0",
+  "roots": [
+    "rail",
+    "bus",
+    "inbox"
+  ],
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "signals",
+    "rolling"
+  ],
+  "db": "data/multitree_synth_mid/transit_v0/hierstore.sqlite"
+}

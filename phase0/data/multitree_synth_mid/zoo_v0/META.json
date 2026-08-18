@@ -1,0 +1,17 @@
+{
+  "tree_id": "zoo_v0",
+  "roots": [
+    "animals",
+    "ops",
+    "notes"
+  ],
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "mammals",
+    "birds"
+  ],
+  "db": "data/multitree_synth_mid/zoo_v0/hierstore.sqlite"
+}

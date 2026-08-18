@@ -1,0 +1,17 @@
+{
+  "tree_id": "esports_v0",
+  "roots": [
+    "org",
+    "content",
+    "inbox"
+  ],
+  "n_facts": 34,
+  "n_dirs": 11,
+  "n_place_tasks": 30,
+  "n_twin_queries": 16,
+  "twin_areas": [
+    "players",
+    "coaching"
+  ],
+  "db": "data/multitree_synth_mid/esports_v0/hierstore.sqlite"
+}
