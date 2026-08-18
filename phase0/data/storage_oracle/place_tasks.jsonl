@@ -1,0 +1,15 @@
+{"id": "pl_001", "kind": "place", "text": "OMP baseline underperformed union@k=32 on LongVideoBench subset", "gold_path": ["work", "slm-lab", "results"], "roots": ["work", "personal", "inbox"]}
+{"id": "pl_002", "kind": "place", "text": "Need to renew AWS credits before Friday or the GPU pod dies", "gold_path": ["work", "infra"], "roots": ["work", "personal", "inbox"]}
+{"id": "pl_003", "kind": "place", "text": "Mom's birthday is March 3", "gold_path": ["personal", "family"], "roots": ["work", "personal", "inbox"]}
+{"id": "pl_004", "kind": "place", "text": "Adopted a dog named Buddy last weekend", "gold_path": ["personal", "pets"], "roots": ["work", "personal", "inbox"]}
+{"id": "pl_005", "kind": "place", "text": "asdf qwer zxcv random scratch", "gold_path": ["inbox"], "roots": ["work", "personal", "inbox"]}
+{"id": "pl_006", "kind": "place", "text": "Paper deadline ACL is May 20 — draft still missing related-work section", "gold_path": ["work", "papers", "acl"], "roots": ["work", "personal", "inbox"]}
+{"id": "pl_007", "kind": "place", "text": "Dentist appointment Thursday 3pm", "gold_path": ["personal", "health"], "roots": ["work", "personal", "inbox"]}
+{"id": "pl_008", "kind": "place", "text": "HierStore MOVE op should re-parent without changing fact text", "gold_path": ["work", "context-management", "storage"], "roots": ["work", "personal", "inbox"]}
+{"id": "pl_009", "kind": "place", "text": "Grocery: oat milk, eggs, cilantro", "gold_path": ["personal", "errands"], "roots": ["work", "personal", "inbox"]}
+{"id": "pl_010", "kind": "place", "text": "Meeting notes: ship Flat vs Hier ablation before Graphiti bakeoff", "gold_path": ["work", "context-management", "meetings"], "roots": ["work", "personal", "inbox"]}
+{"id": "pl_011", "kind": "place", "text": "something something ???", "gold_path": ["inbox"], "roots": ["work", "personal", "inbox"]}
+{"id": "pl_012", "kind": "place", "text": "Modal bill spiked after leaving A100 warm overnight", "gold_path": ["work", "infra", "billing"], "roots": ["work", "personal", "inbox"]}
+{"id": "pl_013", "kind": "move", "text": "OMP failed on LVB subset", "from_path": ["work", "slm-lab"], "gold_path": ["personal", "pets"], "cue": "Correction: this note was miscategorized — it belongs with personal pet / Buddy notes, not the lab.", "fact_id": "f_omp", "roots": ["work", "personal", "inbox"]}
+{"id": "pl_014", "kind": "move", "text": "unclear note about quota", "from_path": ["inbox"], "gold_path": ["work", "infra"], "cue": "Now clear: this is about cloud GPU quota for work infra.", "fact_id": "f_u", "roots": ["work", "personal", "inbox"]}
+{"id": "pl_015", "kind": "place", "text": "Read subtree should return active folder plus descendants only", "gold_path": ["work", "context-management", "storage"], "roots": ["work", "personal", "inbox"]}
