@@ -1,0 +1,12 @@
+# Session-continuity / informal working notes — not project deliverables.
+market.md
+research_landscape.md
+phase0/HANDOFF_PAPER.md
+phase0/CLOSEOUT_NOTES.md
+
+# Personal annotator exports, not meant for the public repo.
+mine-results.json
+rocky-results.json
+
+# Third-party probe cache from vault selection, regenerable.
+data/vaults_probe.json
