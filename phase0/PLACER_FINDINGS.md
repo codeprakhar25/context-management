@@ -577,6 +577,113 @@ train $2.59 + ~8 min H200 dedicated deploy (no capacity stall this time).
 
 ---
 
+### Lexical baselines — BM25 and majority-class (2026-08-19)
+
+Added after adversarial pre-draft review asked why a supposedly
+retrieval-heavy task had no lexical retrieval arm and no trivial floor.
+`scripts/eval_lexical_baselines.py`, k=5, item split on all three corpora,
+$0 spend (no API calls). Output: `runs/lexical_baselines/summary.json`.
+
+| corpus | n | majority | BM25 k=5 |
+|---|---|---|---|
+| A  | 294 | 0.061 | 0.442 |
+| B  | 1,469 | 0.236 | 0.646 |
+| A' | 797 | 0.356 | 0.666 |
+
+By occupancy bucket (train notes already in the gold folder):
+
+| corpus | bucket | n | majority | BM25 |
+|---|---|---|---|---|
+| A  | 1-2 | 18 | 0.000 | 0.333 |
+| A  | 3-9 | 105 | 0.000 | 0.343 |
+| A  | 10+ | 171 | 0.105 | 0.515 |
+| B  | 1-2 | 258 | 0.000 | 0.403 |
+| B  | 3-9 | 653 | 0.064 | 0.636 |
+| B  | 10+ | 558 | 0.545 | 0.771 |
+| A' | 1-2 | 119 | 0.000 | 0.311 |
+| A' | 3-9 | 304 | 0.092 | 0.579 |
+| A' | 10+ | 374 | 0.684 | 0.850 |
+
+Two things this changed in the paper's framing:
+
+1. **BM25 alone beats the gpt-4o cascade on corpus B** (0.646 vs 0.592) and
+   on A' (0.666 vs 0.552). A pure lexical index with zero API spend outruns
+   an embedding shortlist plus an LLM pick per note. That strengthens the
+   "retrieval-only baseline is mandatory" recommendation considerably —
+   it's not just embedding kNN, even BM25 is enough.
+2. **Majority-class is not a trivial floor on the dense bucket.** B 10+
+   majority is 0.545 and A' 10+ is 0.684, i.e. above gpt-4o flat (0.332 on
+   B 10+). Dense buckets are partly a label-skew artifact, which is more
+   evidence that occupancy strata encode folder/vault identity and are not
+   a clean causal axis. Corpus A's majority floor is 0.061 because its
+   tree is much flatter in label mass.
+
+Note A' has a bucket breakdown here (119/304/374) even though the LoRA /
+cascade / kNN arms on A' were pooled-only — these two baselines are free to
+stratify, the LLM arms were not re-run per bucket.
+
+---
+
+### Occupancy sensitivity — do 3 vaults carry the crossing? (2026-08-21)
+
+Raised while rewriting the paper: cascade's dense-bucket collapse (0.414)
+is concentrated in three vaults that PLACER_FINDINGS already flagged
+(TheRoadOfSO 0.020 vs 0.788, anthonyamar 0.312 vs 0.896, ManadayM 0.379
+vs 0.947). A pooled crossing driven by three pathological vaults is a weak
+result, so the whole item-split table was rebuilt from per-item artifacts
+with them removed. `scripts/occupancy_sensitivity.py`, $0 (reads
+`runs/vaultB_{flat,knn_k5only,cascade,lora_item}/*/holdout_results.jsonl`
+joined to `data/vaults_build/*/{train,val}.jsonl` for occupancy).
+Output: `runs/occupancy_sensitivity/summary.json`.
+
+All 27 vaults — reproduces the published table exactly, independent path:
+
+| occ | n | majority | flat | BM25 | kNN | cascade | LoRA |
+|---|---|---|---|---|---|---|---|
+| 1-2 | 258 | 0.000 | 0.547 | 0.403 | 0.457 | 0.628 | 0.667 |
+| 3-9 | 653 | 0.064 | 0.662 | 0.636 | 0.718 | 0.729 | 0.776 |
+| 10+ | 558 | 0.545 | 0.332 | 0.771 | 0.833 | 0.414 | 0.772 |
+| all | 1,469 | 0.235 | 0.516 | 0.646 | 0.716 | 0.592 | 0.756 |
+
+Excluding the 3 outlier vaults (drops 40% of the dense bucket):
+
+| occ | n | majority | flat | BM25 | kNN | cascade | LoRA |
+|---|---|---|---|---|---|---|---|
+| 1-2 | 240 | 0.000 | 0.542 | 0.408 | 0.454 | 0.629 | 0.671 |
+| 3-9 | 604 | 0.070 | 0.662 | 0.627 | 0.710 | 0.732 | 0.781 |
+| 10+ | 335 | 0.510 | 0.445 | 0.708 | 0.776 | 0.621 | 0.806 |
+| all | 1,179 | 0.181 | 0.576 | 0.606 | 0.677 | 0.679 | 0.766 |
+
+Three conclusions, and they do not all point the same way:
+
+1. **The crossing SURVIVES.** Cascade beats kNN by +17.5pt at 1-2 (0.629
+   vs 0.454) and loses by -15.5pt at 10+ (0.621 vs 0.776). Full-corpus
+   swing 59pt -> 33pt trimmed, but the sign flip is intact. This is the
+   paper's central claim and it is robust.
+2. **"Retrieval-only beats the cascade in aggregate" does NOT survive.**
+   Full: kNN 0.716 vs cascade 0.592 (+12.4pt). Trimmed: kNN 0.677 vs
+   cascade 0.679 — a dead tie, and BM25 (0.606) now *loses* to cascade.
+   That claim was carried entirely by the 3 vaults. Paper reworded: the
+   reason to require a retrieval baseline is that omitting it can invert
+   a conclusion, not that it reliably wins.
+3. **The parent-naming pathology is confined to the outliers.** Share of
+   cascade preds that are a proper prefix of gold, dense bucket: 14.3%
+   all-vaults vs **2.4%** trimmed (sparse 6.2/6.7%, mid 4.1/2.6%). So it
+   is a data artifact of vaults with uninformative folder names
+   (TheRoadOfSO's hex dirs), not a general retrieve-then-pick failure.
+   Good news for the method, bad news for corpus B's cleanliness.
+
+Also unstable and now flagged in the paper: **who wins the dense bucket**.
+Full corpus kNN 0.833 > LoRA 0.772; trimmed LoRA 0.806 > kNN 0.776. Not
+settled by this data. What is settled is that cascade is not the winner.
+
+Majority-class floor added to the table for the first time and it is not
+trivial: **0.545 at B 10+** (above flat gpt-4o's 0.332), 0.510 trimmed.
+Dense buckets are partly label skew, reinforcing that occupancy strata
+encode folder/vault identity and are not a clean causal axis.
+
+---
+
 ### Cross-vault leakage check (2026-08-19)
 
 Raised in adversarial review: corpus B/A′ train sets are pooled across
