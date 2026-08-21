@@ -1,235 +1,361 @@
+% arXiv preprint. ACL format.
 \documentclass[11pt]{article}
-
-% Generic, dependency-light preprint/workshop-short-paper format.
-% No venue-specific .cls required -- compiles as-is on Overleaf or any
-% standard TeX Live install (texlive-latex-base + texlive-latex-extra).
-% Swap in an official venue template later; content/citations are the
-% part that took the work, not the final formatting.
-
-\usepackage[margin=1in]{geometry}
-\usepackage{graphicx}
+\usepackage{acl}
+\usepackage{times}
+\usepackage{latexsym}
 \usepackage{booktabs}
+\usepackage{graphicx}
 \usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage[hidelinks]{hyperref}
 \usepackage{xcolor}
+\usepackage{url}
 \usepackage{enumitem}
 
-\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+\newcommand{\corpA}{\textsc{a}}
+\newcommand{\corpB}{\textsc{b}}
+\newcommand{\corpAp}{\textsc{a}$'$}
 
-\title{The Occupancy Curve: A Support-Stratified Evaluation of LLM Note Placement}
-\author{\todo{author names} \\ \todo{affiliation}}
-\date{Draft --- \today. Not anonymized. 4-page short-paper target.}
+\title{The Occupancy Curve: Why Note-Placement Accuracy\\
+Depends on How Full the Folder Already Is}
+
+\author{Prakhar Khatri \\ Independent Researcher \\ \texttt{prakharkhatri123@gmail.com}}
 
 \begin{document}
 \maketitle
 
+% ============================================================================
 \begin{abstract}
-When an LLM agent files a new note into an existing folder hierarchy,
-prior work does not report accuracy as a function of how many notes
-already sit in the target folder (its \emph{support}) --- nor does it
-evaluate folders with no prior notes at all. We stratify by support
-directly and find that method rankings differ by stratum: a frontier
-model prompted with the full folder tree stays in a narrow band, a
-retrieval baseline is consistently above it, and a fine-tuned small model
-crosses both. We validate our gold labels with a two-annotator study
-(Cohen's $\kappa=0.901$). On a second corpus we also stratify by support
-directly, and on a third; in the item-stratified regime shared by all
-three, a fine-tuned model beats the retrieval-then-pick cascade that wins
-on our first corpus --- a reversal reproduced on both additional corpora,
-whose cause we tested for (a proposed tree-size mechanism) and did not
-find. We report the reversal as real and its cause as open, rather than
-force an explanation onto it. Support strata are confounded with folder,
-vault, and corpus identity --- we do not claim support causes the
-ranking change, only that it correlates with it and the correlation
-reproduces where we have the data to check.
+When an agent writes a note, something has to decide which folder it goes in.
+Recent work scores that decision with a single accuracy number.
+We show that number is an average over two very different situations: filing into a folder that already holds a dozen similar notes, and filing into a folder the system has never seen used.
+We call the number of notes already in the target folder its \emph{occupancy}, and we report accuracy separately at each occupancy level.
+Four methods (prompting with the whole folder list, lexical and embedding nearest-neighbour retrieval, a retrieve-then-pick cascade, and a fine-tuned 8B model) were run on three corpora: one private working directory, 27 public personal note vaults, and 16 public software repositories.
+No method wins everywhere, and the ordering itself moves.
+On 27 public vaults the cascade ranks second of five when the gold folder holds one or two notes and fourth when it holds ten or more, while embedding $k$NN moves in the opposite direction, from fourth to first.
+The cascade that wins outright on our private tree loses on both public corpora.
+We tested the obvious explanation for that reversal (tree size) at the correct unit of analysis and it did not hold.
+We therefore recommend three reporting changes for this task: break accuracy out by occupancy, always include a retrieval-only baseline, and always include an evaluation on folders that have never been used.
 \end{abstract}
 
+% ============================================================================
 \section{Introduction}
 
-Write-time filing --- given a new note and an existing folder tree, which
-folder should it join --- is a small, concrete instance of the broader
-agent-memory-organization problem. It has a clean metric (does the
-model's predicted path match where the note was actually filed) and a
-natural axis the literature has not stratified results by: how much
-evidence already exists for the target folder. A folder with fifteen
-similar notes in it is evaluated identically to a folder with zero in
-existing work, even though nothing guarantees a method that's good at one
-is good at the other.
+Agents that keep long-term notes in a folder tree face a decision every time they write: which folder does this note go in?
+The decision has a convenient gold label, because real note collections record where each note actually ended up.
+A system is scored by how often it predicts that folder.
 
-PaperRouter-Agent~\cite{paperrouter} names this task PHPR
-and reports a cascade of retrieval and LLM inspection beating a flat
-baseline by 22 points on five researchers' Zotero libraries. Their
-pipeline already formalizes folders by their existing members and
-abstains when membership is too thin, but does not report accuracy
-\emph{as a function of} member count and does not evaluate folders with
-zero members. We do not know, and do not claim to know, whether their
-support distribution skews toward well-populated folders --- only that
-they do not report the stratified breakdown, and we do.
+The problem with that score is what it averages over.
+Consider two notes filed on the same day.
+The first belongs in \texttt{work/slm-lab/infra}, a folder that already holds seven notes about the same service.
+The second belongs in \texttt{work/newproject/setup}, a folder created that morning, holding nothing.
+Both count for one point.
+But they are not the same problem, and they do not reward the same machinery.
+A nearest-neighbour retriever can solve the first note by looking at what its neighbours did; on the second it cannot even name the folder, because retrieval over training notes can only return folders that have training notes.
+A prompted language model that sees the full folder list can name either folder, but has no evidence about local filing habits.
+A model fine-tuned on the tree may have memorised its conventions, or may have only learned to emit well-formed paths.
 
-We stratify by support directly. Figure~\ref{fig:fig1} shows the result
-on our primary corpus: a frontier model given the full folder list
-(\textbf{flat}) stays in a narrow band across the item-stratified support
-strata; a \textbf{k-nearest-neighbor} retrieval baseline sits
-consistently above it at every positive-support stratum; a
-\textbf{fine-tuned 8B model} crosses both. The disconnected zero-support
-point (a separately constructed evaluation, see \S\ref{sec:method}) is
-not comparable to the item-stratified strata as a ``band width'' --- it
-comes from a different split with different method configurations
-entirely --- but it is itself informative: all three methods are much
-closer to each other there than anywhere else on the item-stratified
-side, a fourth regime prior work has not reported on at all, not just an
-underreported tail of the one it does.
+None of that is visible in a pooled accuracy.
+We make it visible by defining a note's \textbf{occupancy} as the number of training notes already filed in its gold folder, and reporting accuracy separately for each occupancy level.\footnote{In standard classification terms this is the \emph{support} of the gold class. We use ``occupancy'' throughout because it says what the quantity is: how full the folder already is.}
+We use three levels for folders that have members ($1$--$2$, $3$--$9$, $10{+}$) and add a separately constructed zero-occupancy evaluation, in which entire folders are held out of training so that every evaluation note lands in a folder the system has never seen used.
+
+Reporting this way changes the comparison, and it changes it in a way a single number actively hides.
+On 27 public personal note vaults, the method ordering reorders itself across the three occupancy levels.
+A retrieve-then-pick cascade ranks second of five methods when the gold folder holds one or two notes and fourth when it holds ten or more; embedding $k$NN moves the other way, from fourth to first; lexical BM25 moves from last to third.
+The same protocol also exposes a reversal we did not expect and cannot explain.
+On our private tree, the cascade beats the fine-tune decisively, which was the result we set out to report.
+On both public corpora that ordering inverts.
+We tested the natural explanation, that smaller trees favour a model which sees every folder while larger trees favour a shortlist, using a permutation test at the vault level, and found nothing ($p{=}0.89$ and $p{=}0.67$).
+An earlier item-pooled version of the same analysis looked strongly significant and was wrong; we describe why in \S\ref{sec:reversal}, because the mistake is easy to repeat.
+
+Placement is not a new task \citep{koller1997,klimt2004enron,paperrouter}.
+Our contribution is not the task but what happens to its conclusions under a protocol that separates these regimes.
 
 \paragraph{Contributions.}
-\begin{enumerate}[leftmargin=*, itemsep=2pt]
-  \item A support-stratified evaluation for note placement, including a
-    zero-support (folder-disjoint) regime existing work does not
-    evaluate.
-  \item A candidate-set-size $\times$ grounding factorial
-    (\S\ref{sec:grounding}) that is suggestive, not decisive, about which
-    part of PaperRouter-Agent's reported gain a retrieval step alone
-    could plausibly account for.
-  \item Cross-corpus evidence (two independent public corpora, 43
-    vaults/repos total, item-stratified split) that a fine-tuned model
-    beats a retrieval-then-pick cascade in a regime where our own
-    private corpus shows the opposite ranking --- a real, reproduced
-    reversal whose cause we test for and do not find
-    (\S\ref{sec:reversal}). One of the two public corpora also has a
-    folder-disjoint result, and it does \emph{not} show this reversal
-    (\S\ref{sec:reversal}, \S\ref{sec:discussion}) --- the reversal is
-    specific to the seen-folder regime, on the evidence we have.
-  \item A two-annotator gold-label validation study, $\kappa=0.901$, on
-    whether our corpus-A gold labels are sensible destinations --- not a
-    validation of the exact-match metric's single-correct-answer
-    assumption, which the study does not test (\S\ref{sec:annotation}).
+\begin{enumerate}[itemsep=2pt,topsep=3pt]
+  \item An \textbf{occupancy-stratified evaluation protocol} for note placement, including a zero-occupancy split built by holding out whole folders, plus a two-annotator study confirming that the gold labels on our private tree are sensible destinations ($\kappa{=}0.901$).
+  \item The \textbf{empirical consequence of using it}: on 27 public vaults the method ordering reorders across occupancy levels, and a retrieval-only baseline that makes no LLM call at all is competitive with, and on the full corpus beats, a cascade that makes one per note. A sensitivity analysis separates which of these conclusions is robust and which is carried by three vaults.
+  \item A \textbf{cross-corpus reversal}, reported as an open problem: the method ranking on one private tree does not predict the ranking on either public corpus, and the one mechanism we tested does not explain it.
 \end{enumerate}
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.92\linewidth]{figures/fig1_coverage_curve.pdf}
-  \caption{Corpus A. The $x=0$ point comes from a separately constructed
-  folder-disjoint split with different method configurations
-  (\S\ref{sec:method}) and is plotted disconnected from the
-  item-stratified strata ($x=1..3$) --- it is not the left edge of one
-  fitted curve, and its spread should not be compared to theirs as if it
-  were. 95\% Wilson-score confidence intervals shown per point (marginal
-  per-point intervals, not a test of the between-point difference);
-  $n=18$ at the 1--2 stratum is the point to read most cautiously. gpt-4o
-  given the full folder list stays in a narrow band across the
-  item-stratified strata; kNN sits above it at every one of those
-  strata; LoRA crosses both flat and kNN. The kNN/LoRA 1--2-vs-3--9 gap
-  is small relative to their wide, overlapping intervals at $n=18$ ---
-  read as inconclusive at that stratum, not as evidence either way.}
-  \label{fig:fig1}
-\end{figure}
+Section~\ref{sec:method} defines the task, the four methods, and the protocol; \S\ref{sec:corpora} describes the three corpora; \S\ref{sec:results} reports results; \S\ref{sec:discussion} states limitations.
 
+% ============================================================================
 \section{Related Work}
 
-\paragraph{PaperRouter-Agent~\cite{paperrouter}.} Same task (they call it
-PHPR), flat 0.39 $\to$ agent 0.61 on five Zotero libraries. No
-unseen-folder evaluation, no retrieval-only baseline, no fine-tuned
-baseline, and no support-stratified breakdown --- our contribution is the
-missing axis, not a new task.
+\paragraph{Filing documents into a tree is an old problem.}
+Assigning documents to nodes of a predefined hierarchy is hierarchical text classification \citep{koller1997,silla2011,zhou2020hiagm}.
+Assigning mail to user folders is the same task on personal trees, and the Enron corpus \citep{klimt2004enron} and later foldering benchmarks \citep{bekkerman2004foldering} were built for it.
+We inherit both the task and the convention of scoring against the folder of record.
+We do not claim a new problem statement.
 
-\paragraph{Filesystem-as-Memory~\cite{filesystem-memory}.} Finds that
-organizing agent memory as a folder tree does not itself improve
-downstream answer accuracy; organization pays for itself in retrieval
-cost, not correctness. We do not claim placement quality improves
-answers --- our metric is purely ``did the file land where it actually
-sat,'' not any downstream task.
+\paragraph{Evaluating on unseen labels is standard one field over.}
+Extreme multi-label classification routinely works with very large label inventories \citep{you2019attentionxml}, and generalized and semantic zero-shot variants specifically evaluate labels that have no training documents \citep{gupta2021zestxml,aggarwal2023semsup}.
+Our zero-occupancy split is that evaluation applied to personal note trees.
+The split is not a methodological invention; the point is that placement work has not been running it.
 
-\paragraph{MemDelta~\cite{memdelta}.} A one-variable-at-a-time protocol
-paper showing a single unreported hidden variable can flip a
-memory-system's reported conclusions. Its methodological caution is why
-we run more than one model family (gpt-4o and Llama-3.3-70B) and report
-every protocol axis (prompt token counts, candidate-set sizes, split
-construction) rather than a single number.
+\paragraph{Agent memory and note routing.}
+PaperRouter-Agent \citep{paperrouter} names this task PHPR and reports a planner/retriever/inspector/reflector agent lifting a single-shot baseline from $0.39$ to $0.61$ on five Zotero libraries.
+Their pipeline already treats folders as sets of members and abstains when membership is thin, which means occupancy is doing work inside their system.
+They do not report accuracy as a function of member count, do not evaluate empty folders, and include neither a retrieval-only nor a fine-tuned baseline.
+That is the gap we fill.
+Separately, work on filesystem-based agent memory \citep{filesystem-memory} finds that organising agent notes as a tree does not by itself improve downstream answer accuracy; the payoff is in retrieval cost.
+We score placement against the folder of record and make no downstream QA claim.
 
-\paragraph{Zero-shot extreme multi-label classification} (ZestXML,
-SemSup-XC, and related work) routinely evaluates unseen-label splits. The
-folder-disjoint split we use is not a novel method --- it is standard
-practice one field over that this literature has not adopted.
+\paragraph{Unreported protocol choices flip conclusions.}
+MemDelta \citep{memdelta} shows that a single undisclosed protocol decision can reverse published conclusions on agent-memory benchmarks.
+Occupancy is such a decision for placement.
+We therefore report occupancy strata, two picker model families, candidate-set sizes, and how each split was constructed, rather than one headline number.
 
-\section{Task and Method}
+% ============================================================================
+\section{Task, Methods, and Protocol}
 \label{sec:method}
 
-\paragraph{Task.} Given a note's text and a folder tree, predict the
-folder path the note belongs in. We score exact path match against the
-note's actual folder-of-record.
+\paragraph{Task.}
+Given the text of a new note and an existing folder tree, predict the full path of the folder the note actually went in.
+The metric is exact path match.
+A note can legitimately fit more than one folder, so exact match penalises a method that picks a different reasonable home; \S\ref{sec:annotation} bounds how often that happens.
 
-\paragraph{Support.} For a given train/val split, a val item's
-\emph{support} is the number of training-partition notes already filed
-in its gold folder. We bucket into $\{0, 1\text{--}2, 3\text{--}9,
-10{+}\}$. \textbf{These buckets are not one continuous curve --- they
-come from two separately constructed splits of the same underlying task
-pool}, and the methods evaluated on each are configured differently,
-described below. Zero support comes from a folder-disjoint split (entire
-folders held out of training, guaranteeing zero support by construction,
-verified on every corpus). Positive support comes from a separate
-item-stratified split (folders seen in training, individual notes held
-out). We report both in one table for space, but treat the zero-support
-point as a distinct experiment, not the left edge of a fitted curve --- a
-limitation we return to in \S\ref{sec:discussion}, and a reason
-Figure~\ref{fig:fig1} does not connect it to the rest of the line.
+\begin{figure}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}p{0.94\columnwidth}@{}}
+\toprule
+\textbf{Input note}\\[1pt]
+\texttt{\footnotesize ``fixed the retry backoff in the ingest}\\
+\texttt{\footnotesize worker --- it was hammering the API''}\\[4pt]
+\textbf{Existing tree} (excerpt)\\[1pt]
+\texttt{\footnotesize work/slm-lab/\{research, infra\}}\\
+\texttt{\footnotesize work/openclaw/\{harness, notes\}}\\
+\texttt{\footnotesize inbox/misc}\\[4pt]
+\textbf{Gold folder} \texttt{\footnotesize work/slm-lab/infra}\\
+\textbf{Occupancy} 7 training notes already filed there,\\
+so this note scores in the $3$--$9$ stratum.\\
+\midrule
+\textbf{What each method does with it}\\[2pt]
+\textbf{flat} \hfill puts all 365 folder paths in one\\
+\hfill prompt and asks gpt-4o to choose\\[2pt]
+\textbf{BM25 / $k$NN} \hfill finds the 5 most similar\\
+\hfill \emph{training notes}, returns the majority\\
+\hfill folder of those 5; never proposes a\\
+\hfill folder with no training notes\\[2pt]
+\textbf{cascade} \hfill shortlists 20 folders by nearest\\
+\hfill training note, then asks gpt-4o to\\
+\hfill pick one of the 20\\[2pt]
+\textbf{LoRA} \hfill Llama-3.1-8B fine-tuned on this\\
+\hfill tree's own training notes, full\\
+\hfill folder list at inference\\
+\bottomrule
+\end{tabular}
+\caption{One placement decision, and what each of the four methods does with it. Occupancy is a property of the \emph{gold folder}, not of the note, and is computed from the training partition only.}
+\label{fig:worked}
+\end{figure}
 
-\paragraph{Methods compared, item-stratified split (support $>0$).}
-(1)~\textbf{Flat}: full folder list in the prompt, gpt-4o. (2)~\textbf{kNN}:
-embed the new note, retrieve its nearest neighbors among training notes,
-predict their folder (majority vote; $k=5$). Zero by construction on the
-0-support bucket --- it can only predict folders that have a training
-example. (3)~\textbf{Cascade}: embedding shortlist of the top-20 folders
-by nearest-training-note similarity, then an LLM pick from the shortlist
---- same prompt/parser as flat, only the candidate list changes.
-(4)~\textbf{LoRA}: llama-3.1-8b, LoRA rank 16, 1 epoch, fine-tuned on the
-item-stratified train split, full folder list at inference (matches
-flat's information, not cascade's).
+\paragraph{Occupancy.}
+Given a train/validation split, a validation note's occupancy is the number of \emph{training} notes already filed in its gold folder.
+We bucket into $1$--$2$, $3$--$9$, and $10{+}$.
+Figure~\ref{fig:worked} walks through one decision end to end.
 
-\paragraph{Methods compared, folder-disjoint split (support $=0$),
-corpus A only.} Because no training note exists in an unseen folder,
-kNN's note-based shortlist is empty by construction and the cascade
-instead uses a folder-\emph{path-string} embedding shortlist (top-50, not
-top-20 --- chosen because it has substantially higher recall against
-unseen folders on this corpus), and LoRA is a \textbf{separately
-fine-tuned model} trained on the folder-disjoint split's own train
-partition, not the same checkpoint used for the positive-support buckets.
-The zero-support row in every table in this paper is therefore not ``the
-same four methods extrapolated to zero'' --- it is a different cascade
-configuration and a different LoRA checkpoint, evaluated on a genuinely
-different task (generalizing to a folder with no exemplar at all).
+Zero occupancy is deliberately \emph{not} taken from the same split.
+It comes from a folder-disjoint partition, in which entire folders are held out of training, so every validation note has occupancy $0$ by construction.
+These are two different experiments on the same corpus, not two ends of one curve, and we never join them into a single fitted line.
+The distinction matters: in the item-stratified split the model has seen the folder used and has to judge fit; in the folder-disjoint split it has never seen the folder used and has only the path string to go on.
 
-\paragraph{Corpora.} Corpus A: one person's private working directory,
-870 tasks across 170 folders that actually hold a task (the model is
-offered the larger set of 365 candidate folders that exist in the tree,
-most of them empty of training/val tasks), 78\% one software project
-(\texttt{work/openclaw}) --- see \S\ref{sec:discussion} for the
-construct-validity implication. Corpus B: 27 public personal markdown
-note vaults (GitHub; 14/27 use Obsidian specifically, the rest are plain
-markdown note collections), 4{,}199 tasks, mean 39 folders/vault,
-selected and filtered by a two-stage classifier (structural thresholds
-alone cannot separate personal note vaults from software repositories
-that happen to ship markdown --- package-manifest and source-file-count
-signals can; see Appendix~\ref{app:classifier}). Corpus B also has a
-folder-disjoint evaluation, reported in \S\ref{sec:reversal} alongside
-its item-stratified result --- item-stratified is still where this
-paper's headline results live. Corpus A$'$: 16 public software
-repositories, 2{,}644 tasks, mean 63 folders/repo. A$'$'s folder-disjoint
-split data was built but never evaluated (no method was run on it) ---
-an explicit scope choice, not a null result; A$'$ contributes
-item-stratified results only in this paper. All corpora pin commit SHAs;
-note text is never redistributed, aggregate statistics only.
+\paragraph{Methods.}
+\begin{itemize}[itemsep=1pt,topsep=2pt,leftmargin=*]
+  \item \textbf{Flat}: the complete folder list in one gpt-4o prompt.
+  \item \textbf{Majority}: always predict the most frequent training path. A floor.
+  \item \textbf{BM25}: lexical retrieval over training notes; majority vote of the 5 nearest neighbours' folders.
+  \item \textbf{$k$NN}: the same vote over \texttt{text-embedding-3-small} embeddings, $k{=}5$ unless noted.
+  \item \textbf{Cascade}: embed the note, shortlist the top-20 folders by nearest training-note similarity, then have an LLM pick from the shortlist. gpt-4o is the primary picker; Llama-3.3-70B is run as a second picker to check that results are not an artifact of one API.
+  \item \textbf{LoRA}: Llama-3.1-8B, rank 16, one epoch, trained on that split's own training partition, full folder list at inference.
+\end{itemize}
 
+On the folder-disjoint split, retrieval over training notes has no member to retrieve, so BM25 and $k$NN score $0$ by construction; we report the zero rather than omitting the row, because it is the mechanical consequence that motivates the split.
+The cascade switches to shortlisting by \emph{path-string} embedding (top-50 on corpus~\corpA{}, top-20 on corpus~\corpB{}, each chosen by a candidate-recall gate run before any LLM spend).
+The LoRA evaluated at zero occupancy is a separately trained checkpoint, not the item-split model scored on different items.
+
+% ============================================================================
+\section{Corpora}
+\label{sec:corpora}
+
+\paragraph{\corpB{} (primary): 27 public personal vaults.}
+Public markdown note collections from GitHub, 14 of them Obsidian vaults; 4{,}199 notes, mean 39 folders per vault, one store per vault.
+Selecting these was harder than expected: structural thresholds (note count, directory count, depth) do not separate a personal vault from a software repository that ships documentation, because vaults carry image and PDF attachments that skew the markdown ratio.
+Package manifests and source-file counts do separate them (Appendix~\ref{app:classifier}).
+Results are pooled at the item level, with vault-level win counts reported alongside so that a pooled average cannot hide a split decision.
+
+\paragraph{\corpA{} (case study): one private working tree.}
+The author's own working directory: 870 notes, 170 occupied folders, 365 candidate folders offered at inference.
+It is a single tree from a single person, 78\% of its tasks come from one software project, and it is the wrong population to generalise from.
+It is also the only corpus we could annotate for gold-label quality (\S\ref{sec:annotation}), and it is where the project's original result came from, so we report it as a case study rather than dropping it.
+
+\paragraph{\corpAp{} (replication): 16 public software repositories.}
+A second genre, built the same way as \corpB{}: 2{,}644 notes, item-stratified split only.
+Nine of 25 selected clones timed out during fetch; the 16 that built are the corpus.
+
+All public corpora pin commit SHAs and note text is not redistributed.
+Depth caps differ by corpus (5 on \corpA{}, 8 on \corpB{} and \corpAp{}) and are read from each store rather than assumed.
+Neighbourhood size $k$ and shortlist size were selected on the same validation data we report on, so every number here is exploratory rather than confirmatory.
+
+% ============================================================================
 \section{Results}
+\label{sec:results}
 
-\subsection{Accuracy by support stratum (corpus A)}
-\label{sec:coverage}
+\subsection{Public vaults, folders already in use}
+\label{sec:corpusb}
 
-\begin{table}[h]
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=0.86\textwidth]{figures/fig1_coverage_curve.pdf}
+  \caption{Exact-match accuracy by occupancy on corpus~\corpB{} (27 public vaults, item-stratified split), with 95\% Wilson intervals. The lines cross. Both retrieval baselines ($k$NN, BM25) rise from the bottom of the sparse bucket to the top of the dense one, while the cascade falls from second place to fourth. LoRA is high and nearly flat. Flat gpt-4o, which sees no training members at all, still moves with the buckets, which is why we treat occupancy as an evaluation axis and not as a cause. Section~\ref{sec:sensitivity} repeats this analysis without three outlier vaults; the crossing survives, the aggregate ranking does not.}
+  \label{fig:fig1}
+\end{figure*}
+
+\begin{table}[t]
+  \centering
+  \small
+  \setlength{\tabcolsep}{3.5pt}
+  \begin{tabular}{lrrrrrrr}
+    \toprule
+    occ. & $n$ & maj. & flat & BM25 & $k$NN & casc. & LoRA \\
+    \midrule
+    \multicolumn{8}{l}{\emph{all 27 vaults}}\\
+    1--2  & 258 & 0.000 & 0.547 & 0.403 & 0.457 & 0.628 & \textbf{0.667} \\
+    3--9  & 653 & 0.064 & 0.662 & 0.636 & 0.718 & 0.729 & \textbf{0.776} \\
+    10+   & 558 & 0.545 & 0.332 & 0.771 & \textbf{0.833} & 0.414 & 0.772 \\
+    all   & 1{,}469 & 0.235 & 0.516 & 0.646 & 0.716 & 0.592 & \textbf{0.756} \\
+    \midrule
+    \multicolumn{8}{l}{\emph{excluding 3 outlier vaults} (\S\ref{sec:sensitivity})}\\
+    1--2  & 240 & 0.000 & 0.542 & 0.408 & 0.454 & 0.629 & \textbf{0.671} \\
+    3--9  & 604 & 0.070 & 0.662 & 0.627 & 0.710 & 0.732 & \textbf{0.781} \\
+    10+   & 335 & 0.510 & 0.445 & 0.708 & 0.776 & 0.621 & \textbf{0.806} \\
+    all   & 1{,}179 & 0.181 & 0.576 & 0.606 & 0.677 & 0.679 & \textbf{0.766} \\
+    \bottomrule
+  \end{tabular}
+  \caption{Corpus~\corpB{}, item-stratified split. Cascade is gpt-4o over a note-embedding top-20. $k$NN and BM25 use $k{=}5$. ``maj.'' is the majority-class floor. Bold marks the row maximum. The \emph{all} row is the number a conventional paper would report; the rows above it are what that number averages over. The lower block repeats the analysis with the three vaults of \S\ref{sec:sensitivity} removed.}
+  \label{tab:corpusb}
+\end{table}
+
+Figure~\ref{fig:fig1} and Table~\ref{tab:corpusb} are the main result, and three things are worth separating.
+
+\paragraph{The ranking is not constant.}
+In the sparse bucket the order is LoRA $0.667$, cascade $0.628$, flat $0.547$, $k$NN $0.457$, BM25 $0.403$.
+In the dense bucket it is $k$NN $0.833$, LoRA $0.772$, BM25 $0.771$, cascade $0.414$, flat $0.332$.
+Both retrieval baselines climb from the bottom of the table to the top, and the cascade falls from second to fourth while losing $21$ points in absolute terms.
+LoRA is high and nearly flat throughout, which is its own kind of finding.
+A reader given only the pooled row would conclude that LoRA is the method and $k$NN is a respectable second; the stratified rows say the two are separated almost entirely by what happens in folders that are nearly empty.
+
+\paragraph{Retrieval alone beats the cascade, but only on this corpus composition.}
+Embedding $k$NN at $0.716$ and BM25 at $0.646$ both exceed the gpt-4o cascade at $0.592$ in aggregate, and swapping the picker for Llama-3.3-70B on an identical recipe gives $0.523$, so the aggregate loss is not specific to one API.
+That comparison, however, does not survive the sensitivity analysis in \S\ref{sec:sensitivity}: with three vaults removed the same aggregate becomes a tie ($k$NN $0.677$ vs.\ cascade $0.679$), and BM25 falls below the cascade.
+We therefore state the aggregate claim narrowly.
+A retrieval-only baseline is competitive enough that omitting it can invert a paper's conclusion, which is the reason to require it; whether it \emph{wins} depends on how many dense, label-skewed vaults the corpus happens to contain.
+
+\paragraph{Dense buckets are partly label skew.}
+The majority-class column is not a flat floor.
+Always predicting the single most frequent training path scores $0.545$ in the $10{+}$ bucket, above flat gpt-4o's $0.332$ there.
+Some of what looks like strong dense-bucket performance is a concentrated label distribution rather than filing skill, and any method that can exploit frequency will benefit.
+This is a further reason to read the strata as regimes rather than as difficulty levels.
+
+\paragraph{Occupancy is confounded, and we say so.}
+Flat gpt-4o cannot see training members at all, yet it still swings $0.547 \rightarrow 0.662 \rightarrow 0.332$ across the same three buckets.
+Whatever the buckets are capturing, part of it is folder and vault difficulty, not evidence available to the model.
+We therefore report occupancy as an axis along which rankings change, and explicitly do not claim that occupancy \emph{causes} the changes.
+Flat gpt-4o is the negative control that forces that caution.
+
+\subsection{Does the crossing depend on a few vaults?}
+\label{sec:sensitivity}
+
+The cascade's dense-bucket score is not evenly distributed.
+Three vaults account for most of it: \texttt{anthonyamar} (cascade $0.000$ vs.\ $k$NN $1.000$ at $10{+}$), \texttt{satan1a/TheRoadOfSO} ($0.023$ vs.\ $0.795$), and \texttt{ManadayM} ($0.280$ vs.\ $1.000$).
+In \texttt{TheRoadOfSO} the folder names are opaque hexadecimal strings, and the cascade responds by naming the gold folder's \emph{parent} instead of the folder itself.
+A pooled result driven by three vaults with a shared pathology is a weak result, so we recomputed the whole table without them.
+The lower block of Table~\ref{tab:corpusb} is that recomputation, and it removes $40\%$ of the dense bucket.
+
+Three things follow.
+
+First, \textbf{the crossing survives}.
+The cascade beats $k$NN by $17.5$ points in the sparse bucket ($0.629$ vs.\ $0.454$) and loses to it by $15.5$ points in the dense bucket ($0.621$ vs.\ $0.776$).
+The full-corpus swing of $59$ points falls to $33$, but the sign flip, which is the claim, is intact.
+Method ranking still depends on occupancy after the outliers are gone.
+
+Second, \textbf{the aggregate retrieval-beats-cascade result does not survive}, as noted above.
+It was carried by these three vaults.
+
+Third, \textbf{the parent-naming pathology is confined to them}.
+The share of cascade predictions that are a proper prefix of the gold path is $14.3\%$ in the dense bucket across all vaults but only $2.4\%$ once the three are removed, against $6.7\%$ and $2.6\%$ in the sparse and mid buckets.
+So this is a data-quality artifact of a few vaults with uninformative folder names, not a general failure mode of retrieve-then-pick, and we do not present it as one.
+
+One ranking flips under the trim and should be read as unstable: at $10{+}$, $k$NN leads on the full corpus ($0.833$ vs.\ LoRA $0.772$), while LoRA leads once the three vaults are removed ($0.806$ vs.\ $0.776$).
+Which retrieval-flavoured method is best in dense folders is not settled by this data.
+That the cascade is not the best one is.
+
+\subsection{Public vaults, folders never used}
+
+On the folder-disjoint split of the same 27 vaults ($n{=}1{,}879$), the ordering inverts: cascade $0.583$, flat gpt-4o $0.543$, Llama cascade $0.499$, LoRA $0.475$, $k$NN $0$.
+
+This is the regime where the cascade earns its keep.
+Retrieval over notes has nothing to vote for, so the shortlist must be built from path strings, and a model that reads twenty candidate paths and reasons about which one fits does better than a fine-tune that has memorised a tree it is no longer being asked about.
+The retrieve-then-pick win is real, and it is confined to unseen folders.
+It is not a general fact about cascades versus fine-tunes, which is precisely the claim a pooled number would license.
+
+\subsection{The ranking does not travel between corpora}
+\label{sec:reversal}
+
+\begin{table}[t]
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{lccccc}
+    \toprule
+    corpus & LoRA & casc. & $k$NN & BM25 & wins \\
+    \midrule
+    \corpA{} (1 tree)     & 0.537 & \textbf{0.643} & 0.524 & 0.442 & --- \\
+    \corpB{} (27)  & \textbf{0.756} & 0.592 & 0.716 & 0.646 & 19/6/2 \\
+    \corpAp{} (16) & 0.716 & 0.552 & \textbf{0.732} & 0.666 & 13/3/0 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Item-stratified exact match across all three corpora. $k$NN is $k{=}5$ on \corpA{} and \corpB{}, $k{=}12$ on \corpAp{} (each corpus's own peak). Cascade is gpt-4o. The final column counts vaults won by LoRA / cascade / tied, so the reversal can be checked against something other than a pooled mean.}
+  \label{tab:crosscorpus}
+\end{table}
+
+Table~\ref{tab:crosscorpus} is the uncomfortable result.
+The cascade wins on the private tree.
+On both public corpora it loses to LoRA and to $k$NN, and the LoRA-over-cascade win is broad at the vault level (19 of 27 vaults, and 13 of 16), so it is not a pooled-average artifact.
+Corpus~\corpAp{} is a different genre entirely, software repositories rather than personal vaults, and it reproduces the same aggregate reversal.
+
+\paragraph{The mechanism we tested, and why it failed.}
+The natural explanation is tree size.
+LoRA sees the whole folder list; the cascade sees twenty candidates.
+In a 39-folder vault those are nearly the same list, and in a 365-folder tree they are not, so smaller trees should favour LoRA.
+We first tested this by pooling all 1{,}469 items into three terciles by folder count and running a paired test in each.
+The result was a clean monotone dose-response, replicated across both public corpora, with $p$-values down to $10^{-25}$.
+
+It was wrong.
+Items within a vault are not independent draws, so pooling them and testing per bin is pseudo-replication: the real number of independent units is 27 vaults, not 1{,}469 items.
+Redone at the correct unit, as a permutation test on the Spearman correlation between $\log$ folder count and each vault's own (LoRA $-$ cascade) margin, the effect vanishes:
+\corpB{} $\rho{=}{+}0.029$, $p{=}0.887$ ($n{=}27$);
+\corpAp{} $\rho{=}{-}0.115$, $p{=}0.669$ ($n{=}16$);
+pooled $\rho{=}{+}0.034$, $p{=}0.826$ ($n{=}43$).
+Null in both corpora, opposite-signed between them.
+We retract the tree-size mechanism.
+
+We report the retraction rather than quietly dropping it because the failure mode is generic to this literature: any corpus built as a set of per-user trees invites item-pooled tests, and item-pooled tests on clustered data will manufacture significance from vault identity.
+The same caution applies to the item-level $p$-values elsewhere in this paper; the vault-level win counts in Table~\ref{tab:crosscorpus} are the trustworthy summary.
+
+The reversal itself survives.
+Its cause is open.
+Two confounds we have not separated are pooled cross-vault LoRA training (one adapter per corpus, not one per tree) and candidate-set size, which is entangled with tree size by construction.
+
+\subsection{Case study: one private tree}
+\label{sec:corpusa}
+
+\begin{table}[t]
   \centering
   \small
   \begin{tabular}{lrrrr}
     \toprule
-    support & $n$ & flat (gpt-4o) & kNN & LoRA \\
+    occupancy & $n$ & flat & $k$NN & LoRA \\
     \midrule
     0     & 353 & 0.354 & 0.000 & 0.363 \\
     1--2  & 18  & 0.278 & 0.444 & 0.222 \\
@@ -237,352 +363,122 @@ note text is never redistributed, aggregate statistics only.
     10+   & 171 & 0.339 & 0.620 & 0.673 \\
     \bottomrule
   \end{tabular}
-  \caption{Accuracy by support stratum, corpus A.}
+  \caption{Corpus~\corpA{}. The occupancy-$0$ row is a \emph{separate} folder-disjoint experiment with its own cascade configuration and its own LoRA checkpoint; $k$NN is zero there by construction. The $1$--$2$ row is $n{=}18$ and its ordering should be read as noise.}
   \label{tab:coverage}
 \end{table}
 
-Within the item-stratified split (1--2/3--9/10+), flat stays in a narrow
-band (.20--.34); kNN sits above flat at every one of these three strata
-(never crosses it); LoRA crosses both flat and kNN, below flat at 1--2
-and above both flat and kNN by 10+. The 1--2 vs.\ 3--9 movement for kNN
-and LoRA is not distinguishable from noise given their wide, overlapping
-intervals at $n=18$ (Figure~\ref{fig:fig1}) --- read the exact ordering
-within that pair as inconclusive. A fourth method, the retrieval-then-pick
-cascade (embedding shortlist $\to$ gpt-4o), was not broken down by
-support stratum, but wins on both splits taken as wholes: 0.643 vs.\
-0.537 (LoRA) pooled across the item-stratified split ($n=294$,
-$p=0.00045$, paired), and 0.419 vs.\ 0.363 on the separately constructed
-zero-support split ($n=353$, $p=0.040$, paired) --- no training required
-to beat the fine-tuned model on either. These $p$-values, and every
-$p$-value in this paper computed on corpus A, come from a single tree
-(corpus A has one folder hierarchy), so they describe this corpus's
-items, not a population of trees; we do not treat them as evidence the
-result generalizes --- \S\ref{sec:reversal} tests that directly and
-finds it does not, in this ranking's specific direction.
+Corpus~\corpA{} is one person's directory and generalises to nothing, but it is where this project started and it is the only corpus with a gold-label check, so we report it in full.
 
-\subsection{Candidate-set size $\times$ grounding factorial}
+Within the item-stratified split the cascade wins the pool at $0.643$, against LoRA $0.537$, $k$NN $0.524$, BM25 $0.442$, flat gpt-4o $0.286$, and a majority-class floor of $0.061$.
+An untrained 8B base model scores $0.051$, and most of the LoRA's gain over that base is schema compliance rather than filing skill: invalid paths fall from $24.8\%$ to $0.7\%$.
+Constrained decoding without training did not substitute for the fine-tune.
+On the folder-disjoint split, a cascade with a path@50 shortlist scores $0.419$ against LoRA $0.363$ and flat $0.354$.
+
+Table~\ref{tab:coverage} shows the same non-monotone shape as corpus~\corpB{}: flat gpt-4o's best bucket is $10{+}$ and its worst is $3$--$9$, and $k$NN climbs steadily while flat does not.
+Item-level paired tests on this corpus describe one tree, and we do not treat them as a population result.
+Section~\ref{sec:reversal} is the test at the population unit, and the ranking here does not survive it.
+
+\subsection{What the cascade's gain actually comes from}
 \label{sec:grounding}
 
-A $2\times2$ factorial, corpus A, item split ($n=294$, paired, single
-tree --- same single-tree caveat as \S\ref{sec:coverage}). The two
-factors are candidate-set size (365 folders vs.\ a retrieved top-20) and
-grounding (whether each candidate folder carries a one-line description).
-We call it a factorial because both factors are crossed in the design
-below, not because either factor is internally decomposed --- cutting the
-candidate list to a retrieved top-20 is one bundled intervention (it
-changes what's retrieved, the candidate count, and prompt length
-together), not an isolation of retrieval as a mechanism.
+The cascade differs from flat prompting in two ways at once: it shortens the candidate list, and it selects which candidates survive.
+A $2\times2$ on corpus~\corpA{}'s item split ($n{=}294$) crosses candidate-set size (all 365 folders vs.\ a retrieved top-20) with a one-line description attached to each folder.
 
-\begin{table}[h]
-  \centering
-  \small
-  \begin{tabular}{lcc}
-    \toprule
-    & no descriptions & + descriptions \\
-    \midrule
-    flat (365 folders)   & 0.286 & 0.306 ($p=0.489$, ns) \\
-    retrieved top-20     & 0.643 & 0.660 ($p=0.487$, ns) \\
-    \bottomrule
-  \end{tabular}
-  \caption{Candidate-set-size $\times$ grounding factorial.}
-  \label{tab:factorial}
-\end{table}
+Shortlisting is worth $+35$ points in both description conditions ($p{<}10^{-22}$).
+Adding descriptions is within noise in both rows ($p{\approx}0.49$).
+So the measurable gain is carried by the candidate set, not by describing what each folder contains.
 
-Moving from the flat row to the retrieved-top-20 row is associated with
-+35pt in both columns; adding a one-line folder description within either
-row is within noise --- failure to reject at $n=294$, not evidence the
-two conditions are equivalent. This is suggestive about PaperRouter-Agent's
-reported +22pt gain, not decisive: our grounding condition is a one-line
-summary from at most four truncated notes, not their full top-down
-planning and type-aware member inspection, and our candidate-set-size
-factor is a bundled intervention as noted above --- we cannot separate a
-pure retrieval effect from a pure list-shortening effect here, so we do
-not claim to have identified which of their pipeline stages drives their
-number.
+Two caveats keep this from being a clean mechanism claim.
+The candidate-set factor is itself bundled: changing it changes what was retrieved, how many options remain, and how long the prompt is, all together.
+And our descriptions are gpt-4o-mini one-liners built from at most four truncated training notes, which is not the same thing as PaperRouter-Agent's inspector reading actual member documents at inference time.
+This result is consistent with retrieval carrying the gain we can measure; it does not identify which stage of their pipeline produces their $+22$ points.
 
-\subsection{Cross-corpus generalization, item-stratified split only}
-\label{sec:reversal}
-
-The same cascade-vs-LoRA comparison on two independent public corpora,
-\textbf{item-stratified split} (the regime \S\ref{sec:coverage} covers;
-see below for what corpus B's folder-disjoint split shows):
-
-\begin{table}[h]
-  \centering
-  \small
-  \begin{tabular}{lccl}
-    \toprule
-    corpus & LoRA & cascade & vault-level win count \\
-    \midrule
-    A (private, 1 tree)     & 0.537 & \textbf{0.643} & n/a --- one tree \\
-    B (27 personal vaults)  & \textbf{0.756} & 0.592 & LoRA 19/27, cascade 6, tie 2 \\
-    A$'$ (16 software repos) & \textbf{0.716} & 0.552 & LoRA 13/16, cascade 3/16, tie 0 \\
-    \bottomrule
-  \end{tabular}
-  \caption{Cross-corpus LoRA vs.\ cascade, item-stratified split.}
-  \label{tab:crosscorpus}
-\end{table}
-
-Cascade wins on A; LoRA wins on both B and A$'$ on this split, and the
-win is broad at the vault level on both --- not a pooled-average artifact
-of a few vaults. Corpus B's own support-stratified breakdown (analogous
-to Table~\ref{tab:coverage}, kNN at $k=5$, cascade path@20) replicates
-the crossing pattern, not just the aggregate:
-
-\begin{table}[h]
-  \centering
-  \small
-  \begin{tabular}{lrrrrr}
-    \toprule
-    support & $n$ & flat (gpt-4o) & kNN & cascade & LoRA \\
-    \midrule
-    1--2  & 258 & 0.547 & 0.457 & 0.628 & 0.667 \\
-    3--9  & 653 & 0.662 & 0.718 & 0.729 & 0.776 \\
-    10+   & 558 & 0.332 & \textbf{0.833} & 0.414 & 0.772 \\
-    \bottomrule
-  \end{tabular}
-  \caption{Accuracy by support stratum, corpus B (item-stratified).}
-  \label{tab:corpusb}
-\end{table}
-
-LoRA leads at 1--2 and 3--9; kNN overtakes everything, including LoRA, at
-10+ --- cascade never leads any stratum on corpus B, unlike on corpus A
-where it wins pooled. This is genuine stratum-level replication of ``the
-ranking is not what corpus A showed,'' not merely the same aggregate
-number restated. \textbf{This does not hold on the folder-disjoint
-split.} Corpus B's zero-support evaluation shows cascade beating LoRA
-there too (0.583 vs.\ 0.475) --- the same ranking as corpus A, not the
-reversal. (A$'$'s folder-disjoint split data exists but was never
-evaluated with any method --- an explicit scope choice, not a null
-result; see \S\ref{sec:discussion}.) The reversal reported here is
-specific to the item-stratified, seen-folder regime and should not be
-read as ``LoRA wins on public corpora'' without that qualifier. A$'$ has
-no support-stratified breakdown of its own in this paper (item-split
-aggregate only, by design, \S\ref{sec:method}) --- for A$'$ we can say
-the aggregate item-split reversal replicates; only corpus B lets us also
-say the stratum-level crossing pattern replicates.
-
-We hypothesized tree size as the mechanism for the item-stratified
-reversal (smaller trees favor a model that sees the whole folder list;
-larger trees favor a shortlist-based cascade) and tested it directly: a
-permutation test on the correlation between each vault's folder count and
-its (LoRA $-$ cascade) margin, at the vault level --- the correct unit,
-since items within a vault are not independent draws.
-
-\begin{center}
-\small
-\begin{tabular}{lrrr}
-\toprule
- & $n$ & Spearman(log-folders, margin) & $p$ \\
-\midrule
-corpus B  & 27 & $+0.029$ & 0.887 \\
-corpus A$'$ & 16 & $-0.115$ & 0.669 \\
-pooled    & 43 & $+0.034$ & 0.826 \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-Null in both corpora, opposite-signed between them. \textbf{We found no
-evidence that tree size explains the margin} --- a null result at
-$n=27/16$, not proof the effect is zero. An earlier version of this
-analysis, pooling items across vaults into three folder-count bins,
-showed a strong, monotone, ``significant'' pattern ($p$ as low as
-$10^{-25}$) --- an artifact of treating correlated items as independent
-draws, caught before this pattern was reported as a finding. We report
-the item-stratified reversal as real (broad, vault-level, reproduced on
-two corpora) and its cause as genuinely open. Candidate explanations we
-have not ruled out, and consider at least as likely as tree size: the two
-public corpora pool training data across many vaults into one fine-tuned
-model, so the win could reflect total training volume or cross-tree
-transfer rather than anything about individual trees
-(\S\ref{sec:discussion}); candidate-set size also covaries with tree size
-and directly affects \S\ref{sec:grounding}'s comparison too, since LoRA
-effectively sees the whole tree while the cascade sees a top-20
-shortlist.
-
-\section{Gold-Label Validation}
+\subsection{Are the gold labels any good?}
 \label{sec:annotation}
 
-Exact-match accuracy assumes the recorded folder-of-record is a sensible
-destination for a note. We tested \emph{that} --- not whether it is the
-single uniquely correct destination, which ``ambiguous'' below explicitly
-does not assume. 100 items sampled from corpus A, stratified to match
-\S\ref{sec:coverage}'s support strata (35 zero-support / 18 sparse / 25
-mid / 22 dense), judged independently by two annotators against one
-question --- given only the note text, is the recorded folder a sensible
-home for it?
-
-\begin{table}[h]
+\begin{table}[t]
   \centering
   \small
   \begin{tabular}{lcccc}
     \toprule
-    & correct & ambiguous & unclear & wrong \\
+    & correct & ambig. & unclear & wrong \\
     \midrule
     annotator 1 & 80/98  & 12/98 & 6/98 & 0/98 \\
     annotator 2 & 82/100 & 10/100 & 8/100 & 0/100 \\
     \bottomrule
   \end{tabular}
-  \caption{Gold-label annotation results, corpus A ($n=100$ sampled).}
+  \caption{Corpus~\corpA{} gold-label study. Annotator 1 judged 98 unique notes after two duplicated sample rows collapsed.}
   \label{tab:annotation}
 \end{table}
 
-Cohen's $\kappa = 0.901$ on the 98 items both judged (exact-verdict
-agreement 95/98; annotator 1's total is 98 rather than 100 because 2 of
-the original 100 sampled items turned out to be the same physical note
-drawn from both splits' validation pools, collapsing to one judgment ---
-fixed for annotator 2's pass). Zero cases where one annotator called a
-label correct and the other called it wrong --- every disagreement is a
-boundary call between ``correct'' and ``ambiguous,'' or ``ambiguous'' and
-``unclear.'' 80/98 (82\%) to 92/98 (94\%) of sampled gold labels are
-confirmed sensible, depending on whether ``ambiguous'' (a note that
-plausibly fits more than one folder) counts against the label. This is a
-statement about the gold labels themselves, not about exact-match's error
-rate on any method's predictions --- the study never showed annotators a
-model's output, so it cannot bound how often exact-match scores a
-defensible prediction as wrong. Disagreement concentrates in the
-sparse-support stratum (56\% clean agreement vs.\ 91\%/76\%/91\%
-elsewhere). In \S\ref{sec:coverage}, LoRA is also worst at the sparse
-stratum, but flat and kNN are both worst at 3--9, not 1--2 --- so this is
-not ``every method does worst in the same place the labels are
-noisiest,'' only LoRA's shape lines up with the annotation-disagreement
-pattern, and we do not read more into that single alignment than it can
-support. This study covers corpus A only; corpora B and A$'$ were not
-annotated (avoiding external-annotator exposure to other people's
-public-vault text), so this result does not extend to them.
+Exact match against the folder of record only means something if the folder of record is a sensible destination.
+Two annotators independently judged 100 notes sampled from corpus~\corpA{}, stratified to match the occupancy buckets, and were shown only the note text and the recorded folder.
+They never saw model output.
+The question was: is this a sensible home for this note?
 
+Cohen's $\kappa$ is $0.901$ on the 98 shared items, with 95 of 98 exact-verdict agreements, and no item was called correct by one annotator and wrong by the other.
+Counting ambiguous as a confirmed label, $82$--$94\%$ of sampled gold paths are sensible.
+
+Disagreement concentrates in the sparse bucket: $56\%$ clean agreement there against $91\%$, $76\%$, and $91\%$ elsewhere.
+Sparse folders are genuinely harder to adjudicate, which means part of the sparse-bucket accuracy drop on corpus~\corpA{} may be label ambiguity rather than method failure.
+This study covers corpus~\corpA{} only; \corpB{} and \corpAp{} were not annotated.
+
+% ============================================================================
 \section{Discussion and Limitations}
 \label{sec:discussion}
 
-\paragraph{What this paper supports.} Placement accuracy correlates with
-target-folder support, and different methods dominate different support
-strata --- an association, observed and reproduced, not a causal claim
-(see the confound check immediately below, which is why we phrase it as
-correlates-with rather than depends-on throughout). The item-stratified
-cascade-vs-LoRA reversal is real and reproduced on two independent public
-corpora, including at the stratum level on corpus B, not just in
-aggregate; corpus B's folder-disjoint split does not show it
-(\S\ref{sec:reversal}) --- the reversal is specific to one regime, not a
-general law about fine-tuning vs.\ retrieval.
+Reporting by occupancy changes what the results say.
+On public vaults with folders already in use, a retrieval index is a strong method and putting an LLM picker on top of it is not reliably better; on the full corpus it is visibly worse, and after trimming three outlier vaults it is a tie.
+That the comparison moves this much under a three-vault trim is itself the argument for reporting strata and sensitivity together rather than a single pooled score.
+Fine-tuning wins those vaults in aggregate and still loses to the cascade the moment the folder has never been used.
+A private tree produced the opposite headline from both.
+Any single accuracy for this task is a mixture over those regimes, weighted by a corpus composition nobody reports.
 
-\paragraph{What this paper does not support.} That support \emph{causes}
-the ranking change (the split construction confounds support with folder
-identity, vault identity, and difficulty --- see the confound check
-below); that tree size explains the item-stratified corpus-B/A$'$
-reversal (tested directly, null); that placement quality improves any
-downstream task (out of scope, per Filesystem-as-Memory); or that ``the
-field evaluates only the high-support end'' (PaperRouter-Agent's own
-support distribution is simply unreported, not shown to be high --- we
-claim only that they do not report the stratified breakdown).
+\paragraph{Limitations.}
+Occupancy is confounded with folder, vault, and corpus identity; flat gpt-4o is the negative control that makes this visible, and we do not claim causation.
+Corpus~\corpA{} is 78\% one project.
+Nine of 25 \corpAp{} clones timed out, and nine of 27 \corpB{} vaults were capped at 250 notes in filesystem order.
+Depth caps are not matched across corpora.
+LoRA training on \corpB{} and \corpAp{} pools rows across trees rather than fitting one adapter per tree.
+Both $k$ and shortlist size were chosen on the validation sets we report.
+Item-pooled significance tests in this paper are pseudo-replicated and vault-level counts should be preferred.
+A cross-vault leakage check found 7 of 2{,}266 validation items ($0.31\%$) with a near-duplicate training note in a different vault, all traced to one plugin's auto-generated placeholder file rather than user-written notes.
+We score the folder of record, not downstream QA \citep{filesystem-memory}, and not unique correctness (\S\ref{sec:annotation}).
 
-\paragraph{Confound check.} Corpus B's flat gpt-4o arm --- which cannot
-use training-folder support at all --- still swings $0.547 \to 0.662 \to
-0.332$ across the same three support strata. The strata encode more than
-support alone (folder/vault difficulty, label distribution); the
-LoRA/kNN variation across strata should not be read as caused by support
-in isolation.
+\paragraph{What would settle the open question.}
+Two experiments would separate the confounds behind the reversal: per-vault LoRA adapters, to separate training volume from tree structure, and a lexical baseline placed inside the cascade shortlist, to separate retrieval from picking more cleanly than the corpus-\corpA{} $2\times2$ manages.
+Neither is required for the recommendation below, which is why we make the recommendation and leave the mechanism open.
 
-\paragraph{Corpus construction.} Corpus A is 78\% one software project.
-Corpus A$'$ lost 9 of 25 selected repositories to clone timeouts; corpus
-B capped 9 of 27 vaults at 250 notes, taken in filesystem-traversal order
-(\texttt{Path.rglob}) rather than randomly. Any of these could shift
-measured support or tree size as a side effect of which files happened to
-survive, independent of the underlying phenomenon. The classifier
-separating personal vaults from software repositories in corpus B's
-selection (package-manifest and source-file-count signals; see
-Appendix~\ref{app:classifier}) has no reported precision/recall against a
-held-out labeled set --- it was checked by hand against known cases, not
-validated at scale.
-
-\paragraph{Cross-vault data quality.} Checked for exact and near-duplicate
-notes leaking across vaults in the pooled B/A$'$ training data (embedding
-cosine similarity, no new spend): 1 exact-text duplicate spanning two
-repos (both in train, no train$\leftrightarrow$validation exposure), and
-7/2{,}266 validation items (0.31\%) with a cross-vault near-duplicate
-above cosine 0.95, all one pair of vaults sharing an Obsidian plugin's
-auto-generated placeholder file, not user-authored content. Bounded and
-non-systemic, but disclosed because pooled cross-vault training is
-central to \S\ref{sec:reversal}'s headline.
-
-\paragraph{Pooled training.} Corpora B and A$'$ each fine-tune one LoRA
-pooled across all their vaults/repositories (per-item folder context
-stays local at inference; model weights are shared). The B/A$'$ win over
-cascade may reflect total training volume or cross-tree representation
-transfer rather than anything about individual tree size specifically. We
-flag this rather than resolve it --- the controlled test (per-vault
-isolated training, or a leave-one-vault-out ablation) is expensive and
-left to future work.
-
-\paragraph{No held-out confirmation split.} Every number in this paper,
-across all three corpora, comes from a validation set that also
-implicitly shaped which shortlist size, $k$, or analysis got reported.
-Results here should be read as exploratory.
-
-\paragraph{Statistical unit.} Item-pooled significance tests in this
-domain are pseudo-replicated --- items within a vault or folder are
-correlated, not independent. Corpus A is a single tree, so no
-vault-level replication is possible there at all; its $p$-values describe
-that one corpus's items, not a population of trees. Corpora B and A$'$
-have vault-level counts reported alongside item-pooled $p$-values in
-\S\ref{sec:reversal}, and we recommend the vault count as the trustworthy
-summary where both are available.
-
-\paragraph{Reproducibility.} Embeddings: \texttt{text-embedding-3-small}.
-kNN: $k=5$ (selected on the same validation data it is evaluated on, not
-independently tuned --- see ``no held-out confirmation split'' above).
-Split construction and seeds: \texttt{build\_user\_dir\_split.py} (corpus
-A, default seed 7), \texttt{build\_vault\_corpus.py} (B, A$'$, per-vault
-\texttt{build\_user\_dir\_split.py} calls, same default seed); depth caps
-5 (A) vs.\ 8 (B, A$'$), not matched across corpora. LoRA: llama-3.1-8b,
-rank 16, 1 epoch, lr 1e-4, single training run per corpus/split (no seed
-sweep). Corpus B and A$'$ manifests pin commit SHAs per vault/repo; this
-repository's own commit will be pinned at submission time (not yet done
-in this draft). Full run logs, scripts, and per-item results available in
-the project repository.
-
+% ============================================================================
 \section{Conclusion}
 
-Note-placement method rankings vary by how much target-folder support
-exists, an axis prior work in this task does not report results
-stratified by, and this correlation is not fully explained by our own
-negative-control check either --- the strata carry more than support
-alone. That finding survives adversarial review and a two-annotator
-gold-label check on our primary corpus. A second, more striking-looking
-result --- an item-stratified cascade-vs-fine-tuning reversal reproduced
-on two independent public corpora, but absent from corpus B's
-folder-disjoint result, the one place we can check --- is real but
-regime-specific, and a proposed tree-size mechanism for it did not
-survive a statistically correct test. We report it as an open,
-unexplained, regime-bound reversal rather than force a mechanism onto
-data that does not support one.
+Note-placement papers should stop leading with one accuracy.
+Report accuracy by occupancy, include a retrieval-only baseline, and include an evaluation on folders that have never been used.
+Under that protocol, a retrieve-then-pick cascade is not a general winner, a small fine-tune is not a general winner, retrieval baselines that cost nothing per note are competitive wherever folders are full, and the ranking measured on one private tree does not predict the ranking on public vaults.
+We leave the cause of that reversal open rather than attach an explanation the data do not support.
 
 \section*{Acknowledgments}
 
-Thanks to Rocky for an independent annotation pass on the gold-label
-validation study (\S\ref{sec:annotation}).
+Thanks to Rocky for an independent annotation pass (\S\ref{sec:annotation}).
 
-\bibliographystyle{plain}
+\section*{Reproducibility}
+
+Code, corpus manifests with pinned commit SHAs, and the complete run record, including every correction and negative result reached along the way, are public at \url{https://github.com/codeprakhar25/context-management}.
+Third-party note text is not redistributed; the manifests and build scripts reconstruct corpora~\corpB{} and \corpAp{} from their pinned commits.
+
 \bibliography{main}
 
 \appendix
-\section{Separating personal note vaults from software repositories}
+\section{Separating personal vaults from software repositories}
 \label{app:classifier}
 
-Corpus B's selection pool starts from public GitHub repositories matching
-structural note-vault heuristics (note count, directory count, depth,
-folder-size spread). Of 132 repositories passing those checks, 95 (72\%)
-turned out on manual inspection to be software projects that happen to
-ship markdown documentation (e.g.\ an Obsidian \emph{plugin's} own
-repository, not a vault) --- structural thresholds alone do not separate
-the two populations. Markdown-to-total-file ratio also fails: a real
-vault in our sample scored 0.41 on this ratio, a real software repository
-scored 0.51, because vaults carry image/PDF attachments that dilute their
-own ratio. What separates them reliably: presence of a package manifest
-(\texttt{package.json}, \texttt{pyproject.toml}, \texttt{Cargo.toml},
-etc.) or a source-file count above 30. This two-stage filter was checked
-by hand against known cases (vaults and repos we could identify by name)
-during construction, not validated against an independently labeled
-held-out set --- a precision/recall estimate against such a set is future
-work, not reported here.
+Corpus~\corpB{} starts from GitHub repositories that pass structural note-vault heuristics: note count, directory count, depth, and folder-size spread.
+Of the 132 repositories that passed, 95 turned out to be software projects that ship markdown documentation.
+
+The obvious discriminator does not work.
+Markdown-to-total-file ratio is $0.41$ on a real vault in our sample and $0.51$ on a real software repository, because vaults carry image and PDF attachments that dilute their markdown share.
+What does separate them is the presence of a package manifest (\texttt{package.json}, \texttt{pyproject.toml}, \texttt{Cargo.toml}, and similar) or more than 30 source files.
+The filter was checked by hand against known cases during construction; it was not evaluated against a held-out labelled set, so its error rate is unmeasured.
+The 95 rejected software repositories became the pool from which corpus~\corpAp{} was later drawn.
 
 \end{document}
