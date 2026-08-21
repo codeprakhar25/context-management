@@ -214,8 +214,8 @@ Neighbourhood size $k$ and shortlist size were selected on the same validation d
 \begin{table}[t]
   \centering
   \small
-  \setlength{\tabcolsep}{3.5pt}
-  \begin{tabular}{lrrrrrrr}
+  \setlength{\tabcolsep}{2.6pt}
+  \begin{tabular}{@{}lrrrrrrr@{}}
     \toprule
     occ. & $n$ & maj. & flat & BM25 & $k$NN & casc. & LoRA \\
     \midrule
@@ -464,7 +464,9 @@ Thanks to Rocky for an independent annotation pass (\S\ref{sec:annotation}).
 \section*{Reproducibility}
 
 Code, corpus manifests with pinned commit SHAs, and the complete run record, including every correction and negative result reached along the way, are public at \url{https://github.com/codeprakhar25/context-management}.
+All results in this paper correspond to commit \texttt{6c375c0}.
 Third-party note text is not redistributed; the manifests and build scripts reconstruct corpora~\corpB{} and \corpAp{} from their pinned commits.
+The occupancy tables and the sensitivity analysis of \S\ref{sec:sensitivity} rebuild from stored per-item run artifacts with no API calls, via \texttt{scripts/occupancy\_sensitivity.py} and \texttt{scripts/eval\_lexical\_baselines.py}.
 
 \bibliography{main}
 
