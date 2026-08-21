@@ -48,3 +48,8 @@ paper/*.aux
 paper/*.fls
 paper/*.fdb_latexmk
 paper/*.out
+
+# arXiv submission bundle — regenerate with paper/build_arxiv_bundle.sh
+paper/arxiv_submission/
+paper/arxiv_submission.tar.gz
+paper/*.bib.bak
