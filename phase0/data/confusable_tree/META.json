@@ -1,5 +1,5 @@
 {
-  "db": "/home/prakh/ml-resarch/context-management/phase0/data/confusable_tree/hierstore.sqlite",
+  "db": "phase0/data/confusable_tree/hierstore.sqlite",
   "n_facts": 21,
   "n_queries": 20,
   "roots": [
