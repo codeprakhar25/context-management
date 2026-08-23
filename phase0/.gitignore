@@ -53,3 +53,7 @@ paper/*.out
 paper/arxiv_submission/
 paper/arxiv_submission.tar.gz
 paper/*.bib.bak
+
+# NeurIPS workshop submission PDFs — regenerate with paper/build_workshop.sh
+paper/main_neurips.pdf
+paper/submission_*.pdf
