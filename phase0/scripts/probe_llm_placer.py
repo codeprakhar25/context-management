@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LLM path placer probe — path fidelity vs gold (STORAGE_SPEC stage 2).
+"""LLM path placer probe — path fidelity vs gold.
 
 OpenAI chat only (default gpt-4o). No OpenRouter for this arm.
 Scores exact + soft path fidelity (same root / prefix / LCP).

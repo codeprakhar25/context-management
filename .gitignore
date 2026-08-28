@@ -9,8 +9,5 @@ phase0/paper/VENUE_SCAN.md
 mine-results.json
 rocky-results.json
 
-# Third-party probe cache from vault selection, regenerable.
-data/vaults_probe.json
-
 # Local Claude Code plugin/editor config, not a project deliverable.
 .claude/
