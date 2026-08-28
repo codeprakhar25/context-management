@@ -15,8 +15,10 @@ TECTONIC="${TECTONIC:-$HOME/.local/bin/tectonic}"
 VENUE="${1:-}"
 
 case "$VENUE" in
-  tae)  TITLE="TAE: Can We Trust AI Evaluation? Robustness, Causality, and Risk in Modern AI Assessment" ;;
-  palm) TITLE="PALM: Personalized, Aligned, Long-Term Memory for AI Systems" ;;
+  tae)  TITLE="TAE: Can We Trust AI Evaluation? Robustness, Causality, and Risk in Modern AI Assessment"
+        FRAMING="tae" ;;
+  palm) TITLE="PALM: Personalized, Aligned, Long-Term Memory for AI Systems"
+        FRAMING="palm" ;;
   *)    echo "usage: $0 {tae|palm}" >&2; exit 1 ;;
 esac
 
@@ -27,13 +29,17 @@ cp main_neurips.tex main.bib neurips_2026.sty "$WORK/"
 mkdir -p "$WORK/figures"
 cp figures/fig1_coverage_curve.pdf "$WORK/figures/"
 
-# substitute the workshop title (python, so the string needs no sed escaping)
-VENUE_TITLE="$TITLE" python3 - "$WORK/main_neurips.tex" <<'PY'
+# substitute the workshop title and select the venue framing (python, so the
+# strings need no sed escaping)
+VENUE_TITLE="$TITLE" VENUE_FRAMING="$FRAMING" python3 - "$WORK/main_neurips.tex" <<'PY'
 import os, sys
 p = sys.argv[1]
 s = open(p).read()
 s = s.replace(r"\workshoptitle{WORKSHOP TITLE}",
               "\\workshoptitle{%s}" % os.environ["VENUE_TITLE"])
+if os.environ["VENUE_FRAMING"] == "palm":
+    assert "\\palmfalse" in s, "venue framing switch not found"
+    s = s.replace("\\palmfalse", "\\palmtrue", 1)
 open(p, "w").write(s)
 PY
 

@@ -6,6 +6,12 @@
 \usepackage[dblblindworkshop]{neurips_2026}
 \workshoptitle{WORKSHOP TITLE}
 
+% Venue framing switch. The body is shared; only the abstract opener, its
+% closing sentence, and the first two sentences of the introduction differ.
+% build_workshop.sh flips this line to \palmtrue for the PALM submission.
+\newif\ifpalm
+\palmfalse
+
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{hyperref}
@@ -34,23 +40,41 @@ Depends on How Full the Folder Already Is}
 
 % ============================================================================
 \begin{abstract}
+\ifpalm
+An agent with long-term memory has to put each new note somewhere in the user's own folder tree.
+That tree is personal and it grows: some folders already hold a dozen related notes, others were made this morning and hold nothing.
+Recent work scores placement with a single accuracy number that averages over both.
+We call the number of notes already in the target folder its \emph{occupancy}, and we report accuracy separately at each occupancy level, including a zero-occupancy split in which whole folders are held out of training so that every evaluation note lands in a folder the system has never seen used.
+\else
 When an agent writes a note, something has to decide which folder it goes in.
 Recent work scores that decision with a single accuracy number.
 We show that number is an average over two very different situations: filing into a folder that already holds a dozen similar notes, and filing into a folder the system has never seen used.
 We call the number of notes already in the target folder its \emph{occupancy}, and we report accuracy separately at each occupancy level.
+\fi
 Four methods (prompting with the whole folder list, lexical and embedding nearest-neighbour retrieval, a retrieve-then-pick cascade, and a fine-tuned 8B model) were run on three corpora: one private working directory, 27 public personal note vaults, and 16 public software repositories.
 No method wins everywhere, and the ordering itself moves.
 On 27 public vaults the cascade ranks second of five when the gold folder holds one or two notes and fourth when it holds ten or more, while embedding $k$NN moves in the opposite direction, from fourth to first.
 The cascade that wins outright on our private tree loses on both public corpora.
 We tested the obvious explanation for that reversal (tree size) at the correct unit of analysis and it did not hold.
+\ifpalm
+For personal memory this matters twice over: the method that looks best on a mature tree is not the method that handles a folder the user made this morning, and the ranking measured on one person's tree did not transfer to other people's.
 We therefore recommend three reporting changes for this task: break accuracy out by occupancy, always include a retrieval-only baseline, and always include an evaluation on folders that have never been used.
+\else
+We therefore recommend three reporting changes for this task: break accuracy out by occupancy, always include a retrieval-only baseline, and always include an evaluation on folders that have never been used.
+\fi
 \end{abstract}
 
 % ============================================================================
 \section{Introduction}
 
+\ifpalm
+An agent that keeps long-term memory in a folder tree faces a decision every time it writes: which folder does this note go in?
+The tree belongs to the user, it encodes their conventions, and it keeps growing as they use it.
+The decision has a convenient gold label, because real note collections record where each note actually ended up.
+\else
 Agents that keep long-term notes in a folder tree face a decision every time they write: which folder does this note go in?
 The decision has a convenient gold label, because real note collections record where each note actually ended up.
+\fi
 A system is scored by how often it predicts that folder.
 
 The problem with that score is what it averages over.
