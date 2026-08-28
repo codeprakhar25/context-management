@@ -388,28 +388,10 @@ mechanism claim; Appendix~\ref{app:grounding} gives the full result and its cave
 \subsection{Are the gold labels any good?}
 \label{sec:annotation}
 
-\begin{table}[t]
-  \centering
-  \small
-  \begin{tabular}{lcccc}
-    \toprule
-    & correct & ambig. & unclear & wrong \\
-    \midrule
-    annotator 1 & 80/98  & 12/98 & 6/98 & 0/98 \\
-    annotator 2 & 82/100 & 10/100 & 8/100 & 0/100 \\
-    \bottomrule
-  \end{tabular}
-  \caption{Corpus~\corpA{} gold-label study. Annotator 1 judged 98 unique notes after two duplicated sample rows collapsed.}
-  \label{tab:annotation}
-\end{table}
-
 Exact match against the folder of record only means something if the folder of record is a sensible destination.
-Two annotators independently judged 100 notes sampled from corpus~\corpA{}, stratified to match the occupancy buckets, and were shown only the note text and the recorded folder.
-They never saw model output.
-The question was: is this a sensible home for this note?
-
+Two annotators independently judged 100 notes sampled from corpus~\corpA{}, stratified to match the occupancy buckets, shown only the note text and the recorded folder and never model output.
 Cohen's $\kappa$ is $0.901$ on the 98 shared items, with 95 of 98 exact-verdict agreements, and no item was called correct by one annotator and wrong by the other.
-Counting ambiguous as a confirmed label, $82$--$94\%$ of sampled gold paths are sensible.
+Counting ambiguous as a confirmed label, $82$--$94\%$ of sampled gold paths are sensible; Appendix~\ref{app:annotation} gives the per-verdict counts.
 
 Disagreement concentrates in the sparse bucket: $56\%$ clean agreement there against $91\%$, $76\%$, and $91\%$ elsewhere.
 Sparse folders are genuinely harder to adjudicate, which means part of the sparse-bucket accuracy drop on corpus~\corpA{} may be label ambiguity rather than method failure.
@@ -434,7 +416,7 @@ Depth caps are not matched across corpora.
 LoRA training on \corpB{} and \corpAp{} pools rows across trees rather than fitting one adapter per tree.
 Both $k$ and shortlist size were chosen on the validation sets we report.
 Item-pooled significance tests in this paper are pseudo-replicated and vault-level counts should be preferred.
-A cross-vault leakage check found 7 of 2{,}266 validation items ($0.31\%$) with a near-duplicate training note in a different vault, all traced to one plugin's auto-generated placeholder file rather than user-written notes.
+A cross-vault leakage check found a near-duplicate training note for 7 of 2{,}266 validation items ($0.31\%$), all traced to one plugin's auto-generated placeholder file.
 We score the folder of record, not downstream QA \citep{filesystem-memory}, and not unique correctness (\S\ref{sec:annotation}).
 
 \paragraph{What would settle the open question.}
@@ -453,18 +435,37 @@ We leave the cause of that reversal open rather than attach an explanation the d
 
 \section*{Reproducibility}
 
-Code, corpus manifests with pinned commit SHAs, and the complete run record, including every
-correction and negative result reached along the way, will be released publicly on acceptance;
-they are available to reviewers on request through the programme chairs.
-Third-party note text is not redistributed; the manifests and build scripts reconstruct
-corpora~\corpB{} and \corpAp{} from their pinned commits.
-The occupancy tables and the sensitivity analysis of \S\ref{sec:sensitivity} rebuild from stored
-per-item run artifacts with no API calls.
+Code, corpus manifests with pinned commit SHAs, and the complete run record, including the
+corrections and negative results along the way, will be released publicly on acceptance, and are
+available to reviewers on request through the programme chairs.
+Third-party note text is not redistributed; the manifests rebuild corpora~\corpB{} and \corpAp{}
+from their pinned commits, and every table rebuilds from stored per-item artifacts with no API calls.
 
 \bibliographystyle{plainnat}
 \bibliography{main}
 
 \appendix
+\section{Gold-label annotation counts}
+\label{app:annotation}
+
+The annotators were asked one question: is this a sensible home for this note?
+Table~\ref{tab:annotation} gives their verdict counts.
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{lcccc}
+    \toprule
+    & correct & ambig. & unclear & wrong \\
+    \midrule
+    annotator 1 & 80/98  & 12/98 & 6/98 & 0/98 \\
+    annotator 2 & 82/100 & 10/100 & 8/100 & 0/100 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Corpus~\corpA{} gold-label study. Annotator 1 judged 98 unique notes after two duplicated sample rows collapsed.}
+  \label{tab:annotation}
+\end{table}
+
 \section{What the cascade's gain actually comes from}
 \label{app:grounding}
 
