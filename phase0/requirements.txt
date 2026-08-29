@@ -1,10 +1,7 @@
-# Core: harness, retrieval baselines, and every API-based placer.
+# Core: note store, retrieval baselines, and every API-based placer.
 openai>=1.40.0
 numpy>=1.26.0
 python-dotenv>=1.0.0
-
-# Figure 1 (paper/make_figure1.py).
-matplotlib>=3.8.0
 
 # Local LoRA training only (modal_sft_placer.py). Skip unless you are
 # retraining the adapter; the evaluation scripts do not import these.

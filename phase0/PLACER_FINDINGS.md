@@ -723,14 +723,14 @@ whether the gold label itself is trustworthy. Tool: `scripts/build_annotation_sa
 
 | annotator | correct | ambiguous | unclear | wrong |
 |---|---|---|---|---|
-| prakhar | 80/98 | 12/98 | 6/98 | 0/98 |
-| rocky | 82/100 | 10/100 | 8/100 | 0/100 |
+| annotator 1 | 80/98 | 12/98 | 6/98 | 0/98 |
+| annotator 2 | 82/100 | 10/100 | 8/100 | 0/100 |
 
 n=98 vs n=100: the sample is 100 unique items (`build_annotation_sample.py`,
-fixed version). Prakhar's pass predates the fix — 2 of his 100 judgments
+fixed version). Annotator 1's pass predates the fix — 2 of those 100 judgments
 landed on items that later turned out to be the same physical note sampled
 twice, collapsing to 98 unique — see the dedup bug write-up further down.
-Rocky's pass used the corrected 100-item file. 98 is the common-items count
+Annotator 2's pass used the corrected 100-item file. 98 is the common-items count
 for inter-rater agreement; each annotator's own total (98, 100) is correct
 for that annotator.
 
@@ -738,7 +738,7 @@ Inter-rater agreement on the 98 common items: **exact-verdict 95/98 (0.969),
 Cohen's κ = 0.901** ("almost perfect"). Binary usable-vs-not (correct+ambiguous
 vs unclear+wrong) agreement 97/98. Zero correct-vs-wrong crossings between
 raters — every disagreement is a boundary call (correct↔ambiguous or
-ambiguous↔unclear). By occupancy bucket (prakhar, corrected): 0-notes 30/33
+ambiguous↔unclear). By occupancy bucket (annotator 1, corrected): 0-notes 30/33
 (91%), 1–2 10/18 (56%, weakest — sparse folders are hardest for humans too,
 same shape as the model coverage curve), 3–9 19/25 (76%), 10+ 20/22 (91%).
 
@@ -746,14 +746,14 @@ same shape as the model coverage curve), 3–9 19/25 (76%), 10+ 20/22 (91%).
 implied:**
 1. **This validates corpus A's gold only.** Corpus B and A′ were never
    annotated (external-annotator exposure to other people's public-vault
-   text was ruled out on licensing grounds — see HANDOFF_PAPER.md). A high
+   text was ruled out on licensing grounds). A high
    κ on A says nothing directly about whether B's or A′'s folder-of-record
    labels are sensible; do not write sentences that let that inference slip
    through.
 2. **The annotation question is "is this a sensible home," not "is this the
    only correct home."** Exact-match accuracy scores against a single gold
    path, which assumes uniqueness the annotation study explicitly does not
-   claim — 12% of prakhar's judgments were "ambiguous" (plausible elsewhere
+   claim — 12% of annotator 1's judgments were "ambiguous" (plausible elsewhere
    too). A method that picks a *different* plausible folder is scored wrong
    by exact-match but might be judged fine by an annotator. This caps how
    much the accuracy numbers in this document can be over-interpreted as
@@ -771,7 +771,7 @@ where the paper's own claim says it should (sparse folders). This backs
 every corpus-A number in this document — they are not being computed
 against noisy labels. Does not touch corpus B (kept to corpus A only —
 external annotators + other people's public-vault text was ruled out on
-licensing grounds, see HANDOFF_PAPER.md).
+licensing grounds).
 
 Data-quality gotcha caught during review: two of the 98 items were the
 *same physical note*, sampled once from each split's independent val pool

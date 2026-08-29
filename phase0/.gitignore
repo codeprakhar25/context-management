@@ -39,21 +39,10 @@ data/fireworks_placer_userdir_v2_fold/
 # LoCoMo is a third-party benchmark; don't redistribute a local cache of it.
 data/locomo/
 
-# tool caches and LaTeX build byproducts
+# tool caches
 .gstack/
-paper/*.log
-paper/*.blg
-paper/*.bbl
-paper/*.aux
-paper/*.fls
-paper/*.fdb_latexmk
-paper/*.out
 
-# arXiv submission bundle — regenerate with paper/build_arxiv_bundle.sh
-paper/arxiv_submission/
-paper/arxiv_submission.tar.gz
-paper/*.bib.bak
-
-# NeurIPS workshop submission PDFs — regenerate with paper/build_workshop.sh
-paper/main_neurips.pdf
-paper/submission_*.pdf
+# Paper sources, figures, build scripts, and every built PDF live here and are
+# deliberately kept out of the repository. The paper is distributed through
+# arXiv; this repository is the code and the run record.
+paper/

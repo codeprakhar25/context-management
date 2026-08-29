@@ -13,11 +13,6 @@ into a folder created this morning are different problems that reward different
 machinery, and pooling them hides a method ranking that reorders — and, across
 corpora, reverses.
 
-Paper: [`phase0/paper/main.pdf`](phase0/paper/main.pdf) (LaTeX source
-[`main.tex`](phase0/paper/main.tex)).
-Complete run record, including every correction and negative result along the way:
-[`phase0/PLACER_FINDINGS.md`](phase0/PLACER_FINDINGS.md).
-
 ## The result in one table
 
 We define a note's **occupancy** as the number of training notes already filed in
@@ -113,12 +108,17 @@ is not included, since it embeds private corpus-A note excerpts.
 
 ```
 phase0/
-  harness/       retrieval and scoring core — store.py, embed.py, bm25.py, metrics.py
+  harness/       note store and retrieval core — store.py, embed.py, bm25.py, index.py
   scripts/       one entry point per method × corpus combination
   data/          corpus manifests, synthetic trees, training splits
-  paper/         LaTeX sources, figures, and the arXiv/workshop build scripts
   PLACER_FINDINGS.md   the full run record
 ```
+
+[`phase0/PLACER_FINDINGS.md`](phase0/PLACER_FINDINGS.md) is the primary document
+here: a dated, 973-line record of every run behind the tables above, including the
+corrections and the negative results. It is where the retracted tree-size mechanism
+is worked through, where the dedup bug in the annotation sample is written up, and
+where each number's provenance can be checked.
 
 `harness/store.py` is a hierarchical note store over SQLite: a hard tree (each note
 under exactly one path), `ADD`/`UPDATE`/`DELETE`/`NOOP` ops with soft delete, an
@@ -173,19 +173,6 @@ Corpora are JSONL. `facts.jsonl`, one object per line:
 
 Retrieval evaluations additionally read `queries.jsonl` with `id`, `text`, `type`,
 `project`, `gold_ids`, `gold_answer`, and optional `distractor_ids`.
-
-## Building the paper
-
-```bash
-cd phase0/paper
-./build_arxiv_bundle.sh          # arxiv_submission.tar.gz, verified to build standalone
-./build_workshop.sh tae          # anonymized single-column workshop PDF
-./build_workshop.sh palm
-```
-
-Both workshop targets come from one anonymized source, `main_neurips.tex`, with a
-per-venue framing switch, so the two submissions cannot drift apart. `main.tex` is
-the version of record.
 
 ## License
 
