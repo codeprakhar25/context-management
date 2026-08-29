@@ -1,5 +1,0 @@
-{"id": "q_dogs", "text": "How many dogs did Andrew adopt?", "project": "conv-demo", "type": "local", "gold_answer": "2", "gold_ids": ["seed_buddy"]}
-{"id": "q_city", "text": "Where does Caroline live?", "project": "conv-demo", "type": "local", "gold_answer": "Portland", "gold_ids": ["seed_city"]}
-{"id": "q_buddy", "text": "What dog did Andrew adopt from a shelter?", "project": "conv-demo", "type": "local", "gold_answer": "Buddy", "gold_ids": ["seed_buddy"]}
-{"id": "q_piano", "text": "What instrument did Jon start learning?", "project": "conv-demo", "type": "local", "gold_answer": "piano", "gold_ids": []}
-{"id": "q_f1_demo", "text": "What F1 is reported for the retrieval task in this conversation?", "project": "conv-demo", "type": "local", "gold_answer": "0.72", "gold_ids": []}
