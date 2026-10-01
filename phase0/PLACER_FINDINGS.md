@@ -910,6 +910,104 @@ a Wilson interval.
 randomly capped rebuild, retrying the timed-out clones, and downstream QA
 validation.
 
+### Results of the pre-specified runs (2026-10-01)
+
+All runs started after commit `308ab59`, which records the pre-specification.
+Intervals are vault-clustered 95% bootstrap (10,000 replicates, seed 0) from
+`vault_level_robustness.py`; differences are paired. Parse failures: 0 in
+every arm except per-vault LoRA e1 on A′ (2 of 797), scored as wrong.
+
+**R1. A′ folder-disjoint split (n=1,264).**
+
+| arm | exact | 95% CI |
+|---|---|---|
+| cascade, path@50 (primary) | 0.491 | [0.320, 0.670] |
+| cascade, path@20 (sensitivity) | 0.488 | [0.315, 0.664] |
+| flat gpt-4o | 0.455 | [0.293, 0.632] |
+| Llama-3.3-70B cascade, path@50 | 0.413 | [0.268, 0.566] |
+| LoRA trained on the folder split | 0.367 | [0.209, 0.550] |
+| path-only top-1 | 0.286 | [0.175, 0.415] |
+| path-description top-1 (R3) | 0.257 | [0.152, 0.381] |
+| kNN | 0 by construction | |
+
+The stated expectation (cascade ≥ flat > LoRA) holds, and on A′ every step
+is clear of zero: cascade − flat +0.036 [+0.003, +0.077], flat − LoRA +0.088
+[+0.019, +0.176], cascade − LoRA +0.124 [+0.055, +0.220]. The picker adds
++0.206 [+0.093, +0.338] over its own path retriever. path@20 loses almost
+nothing to path@50 (0.488 vs 0.491) despite recall 0.768 vs 0.958, so the
+shortlist rule did not decide the result. One vault (oldwinter, 216 of
+1,264 items) is near zero for every arm (gpt-4o 0.056); its held-out folders
+are not separable from their names. The folder-disjoint regime now
+replicates on a second public corpus.
+
+**R2. A′ item split, flat gpt-4o: 0.383** (n=797). Lowest of every arm on A′,
+as on B (0.516) and A (0.286). By bucket: 0.513 / 0.405 / 0.324.
+
+**R3. Path-description retrieval** does not beat embedding the path itself:
+desc − path-only −0.025 [−0.053, +0.003] on B, −0.029 [−0.066, +0.006] on
+A′. A one-line gloss of a folder name adds nothing a path embedding lacks,
+so the cascade's gain on unseen folders comes from the picker, not from
+better retrieval text.
+
+**R4. Member-grounded picker, B item split (n=1,469).** This is the largest
+effect in the follow-up.
+
+| occ | n | grounded | cascade | kNN | LoRA | grounded − cascade | grounded − kNN |
+|---|---|---|---|---|---|---|---|
+| 1-2 | 258 | 0.775 | 0.628 | 0.457 | 0.667 | +0.147 [+0.104, +0.201] | +0.318 [+0.240, +0.403] |
+| 3-9 | 653 | 0.821 | 0.729 | 0.718 | 0.776 | +0.092 [+0.037, +0.166] | +0.103 [+0.026, +0.188] |
+| 10+ | 558 | 0.783 | 0.414 | 0.833 | 0.772 | +0.369 [+0.109, +0.572] | −0.050 [−0.133, +0.026] |
+| all | 1,469 | 0.799 | 0.592 | 0.716 | 0.756 | +0.207 [+0.103, +0.323] | +0.082 [+0.022, +0.148] |
+
+Showing the picker two real training notes per candidate folder removes the
+bare-path cascade's dense-bucket collapse (0.414 to 0.783) and makes it the
+best arm on B. Against LoRA it is +0.043 [−0.020, +0.118] overall, a tie.
+Against kNN the sparse-bucket lead stays (positive in 15 of 16 vaults with
+both buckets) and the dense-bucket deficit is no longer distinguishable
+from zero.
+
+What this changes: the dense collapse was a property of picking from bare
+folder names (largely the parent-naming failure on opaque names), not of
+retrieve-then-pick. The corpus-A 2×2 found that one-line folder descriptions
+did not help; real member notes do, by a wide margin. That is consistent with
+PaperRouter-Agent's design choice to ground on folder contents. Ranking still
+depends on occupancy (the bare cascade, kNN and flat all cross), so the
+reporting recommendation stands, but "the cascade collapses in dense
+folders" must be scoped to the bare-path cascade. Soft metric: grounded
+0.869, +0.102 [+0.038, +0.189] over the cascade.
+
+**R5. Per-vault LoRA (item split).** The re-served pooled adapters reproduce
+their published numbers (B 0.755 vs 0.756, A′ 0.715 vs 0.716; paired
+difference −0.001), so the multi-LoRA deployment adds no serving noise.
+
+| corpus | per-vault e1 | per-vault e3 | pooled | per-vault e3 − pooled | per-vault e3 − cascade |
+|---|---|---|---|---|---|
+| B | 0.506 | 0.686 | 0.755 | −0.069 [−0.110, −0.036] | +0.094 [−0.006, +0.199] |
+| A′ | 0.496 | 0.725 | 0.715 | +0.010 [−0.042, +0.058] | +0.173 [+0.065, +0.278] |
+
+One epoch on a single vault's 22 to 186 rows under-trains (about 0.50 on
+both corpora); three epochs is the fair comparison. Pooled cross-vault
+training helps on B (+0.069) and does nothing on A′. Either way, a LoRA
+trained on one vault alone still matches or beats the bare cascade on both
+public corpora. Pooled training is therefore at most a partial explanation
+of the cross-corpus reversal, and not the explanation on A′. The reversal's
+cause stays open, with one candidate now weakened.
+
+**Deviations from the pre-specification, all operational:**
+- The R1 to R4 launcher hit a time limit mid-run and was restarted. Finished
+  vaults are skipped by design, so no vault was scored twice.
+- Fireworks rejected about 40 training jobs for GPU quota. They were deleted
+  and resubmitted unchanged as capacity freed.
+- Fireworks names a trained model `ft-<job id>-<suffix>`, not the job id. The
+  first adapter-loading pass failed until loading switched to each job's
+  recorded output model. Nothing was evaluated against the wrong adapter.
+
+**Cost.** gpt-4o ~$54 (20.7M prompt tokens). Llama-70B via OpenRouter ~$2
+(2.2M tokens). gpt-4o-mini descriptions and embeddings ~$0.05. Fireworks
+(paid from credits): 87 SFT jobs (~43M training tokens) plus about 1.5 h of
+one H200 multi-LoRA deployment, deleted afterwards; the deployment list was
+confirmed empty.
+
 ---
 
 ### Cross-vault leakage check (2026-08-19)

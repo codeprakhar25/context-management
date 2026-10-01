@@ -231,7 +231,20 @@ def cmd_train(args) -> None:
         for e, mid in it["models"].items():
             if it["corpus"] != "A_prime_fold" and e not in args.epochs:
                 continue
-            if mid in st["jobs"] or (args.yes and remote_exists("supervisedFineTuningJobs", mid)):
+            known = st["jobs"].get(mid, {})
+            if (args.retry_failed and known.get("state") == "JOB_STATE_FAILED"
+                    and "quota" in known.get("message", "").lower()):
+                # quota rejections fail the job at admission; free the id and resubmit
+                if args.yes:
+                    code, j = api("DELETE", f"supervisedFineTuningJobs/{mid}")
+                    if code not in (200, 404):
+                        print(f"  skip {mid}: delete failed {code} {j.get('message')}", file=sys.stderr)
+                        continue
+                    st["jobs"].pop(mid)
+                    save_state(st)
+                else:
+                    print(f"  DELETE supervisedFineTuningJobs/{mid} then resubmit")
+            elif mid in st["jobs"] or (args.yes and remote_exists("supervisedFineTuningJobs", mid)):
                 print(f"  skip {mid}: job exists")
                 continue
             if args.yes:
@@ -265,6 +278,7 @@ def cmd_status(args) -> None:
         s = r.get("state", f"HTTP{code}") if code == 200 else f"HTTP{code}"
         j["state"] = s
         j["outputModel"] = r.get("outputModel", j.get("outputModel"))
+        j["message"] = (r.get("status") or {}).get("message", "") if code == 200 else ""
         counts[s] = counts.get(s, 0) + 1
         pct = (r.get("jobProgress") or {}).get("percent", "")
         print(f"  {jid:52s} {s} {pct}" + (f"  {(r.get('status') or {}).get('message','')}"
@@ -321,7 +335,7 @@ def cmd_deploy(args) -> None:
                 if it["corpus"] != "A_prime_fold" and e not in args.epochs:
                     continue
                 if not args.yes or st["jobs"].get(m, {}).get("state") == "JOB_STATE_COMPLETED":
-                    models.append(m)
+                    models.append(output_model(st, m))
     if not args.no_pooled:
         models += list(POOLED.values())
     models += args.extra_model
@@ -342,16 +356,24 @@ def cmd_deploy(args) -> None:
         print("  [DRY RUN: pass --yes]  (real run loads only adapters whose job is COMPLETED in state)")
 
 
+def output_model(st: dict, job_id: str) -> str:
+    """Model id a finished job produced. Fireworks names it ft-<job id>-<suffix>,
+    not the job id, so read it from the job (recorded by `status`)."""
+    om = st["jobs"].get(job_id, {}).get("outputModel")
+    return om.split("/")[-1] if om else job_id
+
+
 def route(model: str, dep: str) -> str:
     return f"accounts/{ACCT}/models/{model}#accounts/{ACCT}/deployments/{dep}"
 
 
 def cmd_model_map(args) -> None:
     dep = args.deployment
+    st = load_state()
     for c in ("B", "A_prime"):
         if args.corpus not in (c, "all"):
             continue
-        m = {it["vault"]: route(it["models"][args.map_epochs], dep)
+        m = {it["vault"]: route(output_model(st, it["models"][args.map_epochs]), dep)
              for it in items(c, [args.map_epochs])}
         out = args.out or ROOT / "runs" / f"fireworks_lora_vault_map_{c}_e{args.map_epochs}.json"
         out.write_text(json.dumps(m, indent=2) + "\n")
@@ -399,6 +421,8 @@ def main() -> None:
     p.set_defaults(fn=cmd_plan)
     p = sub.add_parser("upload"); common(p); p.set_defaults(fn=cmd_upload)
     p = sub.add_parser("train"); common(p); p.set_defaults(fn=cmd_train)
+    p.add_argument("--retry-failed", action="store_true",
+                   help="delete jobs that FAILED on GPU quota and resubmit them")
     p = sub.add_parser("status"); p.set_defaults(fn=cmd_status)
     p = sub.add_parser("deploy"); common(p)
     p.add_argument("--deployment", default=DEFAULT_DEP)

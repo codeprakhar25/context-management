@@ -59,12 +59,18 @@ CORPORA = {
             "cascade": ("vaultB_cascade", "__item_note20"),
             "cascade_llama": ("vaultB_cascade_llama70b", "__item_note20"),
             "LoRA": ("vaultB_lora_item", ""),
+            # follow-up runs R4, R5 (PLACER_FINDINGS.md, pre-specified 2026-10-01)
+            "cascade_member": ("vaultB_cascade_mem", "__item_note20_mem2"),
+            "LoRA_pervault_e1": ("vaultB_pervault_e1", ""),
+            "LoRA_pervault_e3": ("vaultB_pervault_e3", ""),
+            "LoRA_pooled_reserved": ("vaultB_pooled_reserved", ""),
         },
         "fold_arms": {
             "flat": ("vaultB_flat", "__folder"),
             "cascade": ("vaultB_cascade", "__folder_path20"),
             "cascade_llama": ("vaultB_cascade_llama70b", "__folder_path20"),
             "LoRA": ("vaultB_lora_fold", ""),
+            "desc_top1": ("vaultB_fold_desc_top1", ""),
         },
     },
     "A_prime": {
@@ -73,8 +79,20 @@ CORPORA = {
             "cascade": ("vaultsA_cascade", "__item_note20"),
             "cascade_llama": ("vaultsA_cascade_llama70b", "__item_note20"),
             "LoRA": ("vaultsA_lora_item", ""),
+            "flat": ("vaultsA_flat", "__item"),
+            "LoRA_pervault_e1": ("vaultsA_pervault_e1", ""),
+            "LoRA_pervault_e3": ("vaultsA_pervault_e3", ""),
+            "LoRA_pooled_reserved": ("vaultsA_pooled_reserved", ""),
         },
-        "fold_arms": {},
+        # R1: path@50 is the primary shortlist under the pre-specified recall rule
+        "fold_arms": {
+            "flat": ("vaultsA_flat", "__folder"),
+            "cascade": ("vaultsA_cascade", "__folder_path50"),
+            "cascade_path20": ("vaultsA_cascade", "__folder_path20"),
+            "cascade_llama": ("vaultsA_cascade_llama70b", "__folder_path50"),
+            "LoRA": ("vaultsA_lora_fold", ""),
+            "desc_top1": ("vaultsA_fold_desc_top1", ""),
+        },
     },
 }
 
@@ -195,7 +213,11 @@ def per_vault(rows: list[dict], arm: str) -> dict[str, tuple[int, int]]:
     return {v: (h, n) for v, (h, n) in out.items()}
 
 
-PAIRS = [("cascade", "kNN"), ("cascade", "centroid"), ("LoRA", "kNN"), ("cascade", "LoRA"), ("cascade", "path_top1")]
+PAIRS = [("cascade", "kNN"), ("cascade", "centroid"), ("LoRA", "kNN"), ("cascade", "LoRA"), ("cascade", "path_top1"),
+         ("cascade", "flat"), ("flat", "LoRA"), ("desc_top1", "path_top1"),
+         ("cascade_member", "cascade"), ("cascade_member", "kNN"), ("cascade_member", "LoRA"),
+         ("LoRA_pervault_e1", "LoRA_pooled_reserved"), ("LoRA_pervault_e3", "LoRA_pooled_reserved"),
+         ("LoRA_pervault_e3", "cascade"), ("LoRA_pooled_reserved", "LoRA")]
 
 
 def cluster_bootstrap(rows: list[dict], arms: list[str], reps: int, rng: np.random.Generator,
@@ -396,7 +418,8 @@ def main() -> None:
     emb = CachedEmbeddings(CACHE)
     report: dict = {"reps": args.reps, "seed": args.seed}
 
-    exact_arms = ["majority", "flat", "BM25", "kNN", "kNN_k1", "centroid", "cascade", "cascade_llama", "LoRA"]
+    exact_arms = ["majority", "flat", "BM25", "kNN", "kNN_k1", "centroid", "cascade", "cascade_llama", "LoRA",
+                  "cascade_member", "LoRA_pervault_e1", "LoRA_pervault_e3", "LoRA_pooled_reserved"]
 
     for corpus in CORPORA:
         rows = item_rows(corpus, emb)
@@ -408,6 +431,7 @@ def main() -> None:
             "soft": by_bucket(rows, [a + "~soft" for a in arms], args.reps, args.seed),
             "crossing_cascade_vs_kNN": crossing_per_vault(rows, "cascade", "kNN"),
             "crossing_cascade_vs_centroid": crossing_per_vault(rows, "cascade", "centroid"),
+            "crossing_member_vs_kNN": crossing_per_vault(rows, "cascade_member", "kNN"),
             "nested_k": nested_k(rows),
         }
         rep["structure_correlates"] = structure_correlates(rows, CORPORA[corpus]["build"], args.reps, args.seed)
@@ -436,13 +460,15 @@ def main() -> None:
             rep["exact_excluding_capped_and_outliers"] = by_bucket(no_outl, arms, args.reps, args.seed)
             print(fmt(f"\n=== corpus B excluding {len(capped)} capped vaults ===", rep["exact_excluding_capped"], arms))
 
+        if CORPORA[corpus]["fold_arms"]:
             frows = fold_rows(corpus, emb)
-            farms = ["path_top1", "flat", "cascade", "cascade_llama", "LoRA"]
+            farms = ["path_top1", *CORPORA[corpus]["fold_arms"]]
             rep["folder_disjoint"] = {
                 "exact": by_bucket(frows, farms, args.reps, args.seed)["all"],
                 "soft": by_bucket(frows, [a + "~soft" for a in farms], args.reps, args.seed)["all"],
             }
-            print(fmt("\n=== corpus B folder-disjoint (occupancy 0) ===", {"0": rep["folder_disjoint"]["exact"]}, farms))
+            print(fmt(f"\n=== corpus {corpus} folder-disjoint (occupancy 0) ===",
+                      {"0": rep["folder_disjoint"]["exact"]}, farms))
         report[corpus] = rep
 
     report["A"] = corpus_a_table()
