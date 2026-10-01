@@ -6,6 +6,10 @@ build_vault_corpus.py) and its own existing_dirs / MAX_DEPTH -- a vault's
 LoRA example must only ever see that vault's folder tree, same as every
 corpus-B eval script. Pooling happens after rows are rendered, not before.
 
+--per-vault writes one train/val pair per vault under out/<vault>/ instead of
+one pooled file (for one-adapter-per-vault LoRA training); rows are the same
+bytes either way, only the grouping differs.
+
 Row format and system prompt are byte-identical to build_sft_placer.py
 (corpus A), so train/eval prompt parity holds across corpora.
 """
@@ -41,6 +45,8 @@ def main() -> None:
     ap.add_argument("--build", type=Path, required=True)
     ap.add_argument("--split", choices=["item", "folder"], required=True)
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--per-vault", action="store_true",
+                    help="write out/<vault>/{train,val,val_meta}.jsonl per vault, no pooled file")
     args = ap.parse_args()
 
     pre = "fold_" if args.split == "folder" else ""
@@ -48,6 +54,7 @@ def main() -> None:
                    if d.is_dir() and (d / "hierstore.sqlite").exists())
 
     train_rows, val_rows = [], []
+    per_vault: dict[str, tuple[list, list]] = {}
     n_vaults = 0
     for snap in snaps:
         train_f, val_f = snap / f"{pre}train.jsonl", snap / f"{pre}val.jsonl"
@@ -61,14 +68,18 @@ def main() -> None:
         roots = (train_t or val_t)[0].get("roots") or ["vault"]
         existing = probe.dirs_from_store(store, roots)
         max_depth = max_depth_from_store(store)
+        v_train, v_val = [], []
         for t in train_t:
             r = sft.to_openai_row(t, existing, max_depth, probe.PLACER_SYSTEM)
             r["meta"]["vault"] = snap.name
-            train_rows.append(r)
+            v_train.append(r)
         for t in val_t:
             r = sft.to_openai_row(t, existing, max_depth, probe.PLACER_SYSTEM)
             r["meta"]["vault"] = snap.name
-            val_rows.append(r)
+            v_val.append(r)
+        per_vault[snap.name] = (v_train, v_val)
+        train_rows += v_train
+        val_rows += v_val
         n_vaults += 1
 
     args.out.mkdir(parents=True, exist_ok=True)
@@ -79,11 +90,26 @@ def main() -> None:
             + ("\n" if rows else "")
         )
 
-    write_jsonl(args.out / "train.jsonl", train_rows)
-    write_jsonl(args.out / "val.jsonl", val_rows)
-    (args.out / "val_meta.jsonl").write_text(
-        "\n".join(json.dumps(r["meta"]) for r in val_rows) + "\n"
-    )
+    def write_set(d: Path, tr: list[dict], va: list[dict]) -> None:
+        d.mkdir(parents=True, exist_ok=True)
+        write_jsonl(d / "train.jsonl", tr)
+        write_jsonl(d / "val.jsonl", va)
+        (d / "val_meta.jsonl").write_text(
+            "\n".join(json.dumps(r["meta"]) for r in va) + ("\n" if va else "")
+        )
+
+    if args.per_vault:
+        counts = {}
+        for name, (tr, va) in per_vault.items():
+            write_set(args.out / name, tr, va)
+            counts[name] = {"n_train": len(tr), "n_val": len(va)}
+        meta = {"split": args.split, "per_vault": True, "n_vaults": n_vaults,
+                "n_train": len(train_rows), "n_val": len(val_rows), "vaults": counts}
+        (args.out / "META.json").write_text(json.dumps(meta, indent=2) + "\n")
+        print(json.dumps({k: v for k, v in meta.items() if k != "vaults"}, indent=2))
+        return
+
+    write_set(args.out, train_rows, val_rows)
 
     meta = {
         "split": args.split,

@@ -684,6 +684,234 @@ encode folder/vault identity and are not a clean causal axis.
 
 ---
 
+### Vault-level robustness (2026-10-01)
+
+Prompted by peer review of the paper. Every check here reads stored per-item
+predictions plus the candidate-recall embedding cache; a cache miss is an
+error, so the script cannot call an API. `scripts/vault_level_robustness.py`,
+$0, 10,000 vault-level bootstrap replicates, seed 0. Output:
+`runs/vault_level_robustness/summary.json`. It reproduces every published
+cell of the corpus B table and the folder-disjoint row.
+
+**1. Vault-clustered intervals.** Items within a vault are not independent,
+so intervals resample whole vaults. Paired differences use the same vault
+draw for both arms.
+
+| corpus | occ | cascade − kNN | 95% CI |
+|---|---|---|---|
+| B | 1-2 | +0.171 | [+0.098, +0.244] |
+| B | 3-9 | +0.011 | [−0.089, +0.112] |
+| B | 10+ | −0.419 | [−0.626, −0.140] |
+| B | all | −0.125 | [−0.267, +0.016] |
+| A′ | 1-2 | +0.311 | [+0.192, +0.444] |
+| A′ | 3-9 | −0.109 | [−0.227, +0.003] |
+| A′ | 10+ | −0.364 | [−0.522, −0.194] |
+| A′ | all | −0.166 | [−0.294, −0.030] |
+
+The crossing holds at the vault level on both public corpora: both
+end-bucket intervals exclude zero, with opposite signs. The B aggregate
+interval includes zero, which matches the paper's narrowed aggregate claim.
+This is also the first occupancy-stratified result on A′; the paper reported
+A′ pooled only.
+
+**2. Per-vault crossing.** Among vaults with items in both the sparse and the
+dense bucket, the cascade beats kNN when sparse and loses to it when dense in
+5 of 16 B vaults and 6 of 10 A′ vaults. No vault shows the reverse. On B
+the sparse half is broad (cascade ahead in 12/16) and the dense half is
+narrower (cascade behind in 7/16). The pooled crossing is a
+mixture of many vaults with a sparse-side edge and fewer with a dense-side
+collapse. State this; do not call it universal.
+
+**3. The k=5 vote rule.** A 1-note folder can supply at
+most one of five neighbours. Two rules remove that size advantage: k=1, and
+nearest folder centroid (each folder is one point, regardless of size).
+
+| corpus B, exact | 1-2 | 3-9 | 10+ | all |
+|---|---|---|---|---|
+| kNN k=5 (paper) | 0.457 | 0.718 | 0.833 | 0.716 |
+| kNN k=1 | 0.508 | 0.655 | 0.783 | 0.678 |
+| centroid | 0.550 | 0.750 | 0.851 | 0.754 |
+| cascade | 0.628 | 0.729 | 0.414 | 0.592 |
+
+The reviewer was right that k=5 penalises sparse folders: centroid gains 9.3
+points there. The crossing survives it. Cascade − centroid is +0.077
+[+0.008, +0.145] sparse and −0.437 [−0.630, −0.176] dense on B, and +0.176 /
+−0.318 on A′, all excluding zero. Centroid ties LoRA in aggregate on B (0.754
+vs 0.756) with no training. Centroid was added after the reviews, so it is a
+post-hoc check, not a pre-specified method.
+
+**4. Soft metric.** A soft hit counts the gold folder,
+its parent, or its child (`soft_score` in `knn_placer_baseline.py`). On B,
+the aggregate cascade − kNN gap goes from −0.125 exact to +0.006 [−0.096,
++0.091] soft. The cascade's aggregate deficit is therefore mostly
+parent-naming. The sparse-bucket edge survives under soft scoring (+0.205
+[+0.121, +0.287]). The dense-bucket loss shrinks to −0.127 [−0.375, +0.035],
+and its interval now includes zero. On A′ both ends survive soft scoring:
++0.311 sparse, −0.332 [−0.480, −0.166] dense. So exact match exaggerates the
+dense-side gap on B but does not create the crossing.
+
+**5. Path-only baseline, folder-disjoint split.** Top-1 folder by
+path-string embedding, no LLM, the same retriever that builds the cascade's
+shortlist: 0.440 [0.345, 0.538] exact on B (n=1,879). Cascade 0.583, so the
+picker adds +0.144 [+0.076, +0.217]. The LLM step earns its cost on unseen
+folders.
+
+**6. Capped vaults.** META.json shows **10** of 27 B vaults hit the 250-note
+cap (`max_files_per_root` skips): AlexiaChen, QSDQSB, anthonyamar, daryllxd,
+dselegent, dwarvesf, phuryn, quanru, satan1a, tieubao. The paper and the
+limitations list below say nine; that is an error to correct. Dropping all
+ten leaves 609 items. The sparse edge survives (cascade − kNN +0.136
+[+0.056, +0.250]). The dense loss keeps its size (−0.432) but its interval
+widens past zero ([−0.621, +0.066]), because only 139 dense items remain.
+LoRA leads that subset outright (0.818 aggregate).
+
+**7. Nested choice of k.** Leave-one-vault-out: choose k
+from {1, 3, 5, 8, 12} on the other vaults, score the held-out vault, repeat.
+On B, every one of the 27 folds picks k=5, so the nested estimate equals the
+reported 0.716 exactly. On A′, every one of the 16 folds picks k=12, so the
+nested estimate equals the reported 0.732. Neither reported kNN number
+carries selection optimism. The cascade shortlist was fixed by candidate
+recall before any LLM call, never by accuracy; see the pre-specification
+below for the rule written out.
+
+**8. Corpus A by occupancy, all arms.** The published Table 3 had flat, kNN
+and LoRA only. Item-level rates (one tree, nothing to cluster on):
+
+| occ | n | majority | flat | BM25 | kNN | cascade | LoRA |
+|---|---|---|---|---|---|---|---|
+| 1-2 | 18 | 0.000 | 0.278 | 0.333 | 0.444 | 0.667 | 0.222 |
+| 3-9 | 105 | 0.000 | 0.200 | 0.343 | 0.381 | 0.476 | 0.371 |
+| 10+ | 171 | 0.105 | 0.339 | 0.515 | 0.620 | 0.743 | 0.673 |
+| all | 294 | 0.061 | 0.286 | 0.442 | 0.524 | 0.643 | 0.537 |
+
+There is **no crossing on corpus A**: the cascade leads kNN in every bucket,
+dense included. The crossing is a public-corpus result, and it belongs with
+the cross-corpus reversal rather than being a separate finding.
+
+**9. Vault structure vs. method margins.** Spearman between five
+per-vault descriptors (log folder count, max depth, notes per folder,
+folder-size Gini, top-folder share) and three per-vault margins, with
+permutation p-values. Vault is the unit. B: nothing below p=0.06 in 15
+tests. A′: folder-size Gini vs (cascade − kNN) ρ=−0.68, p=0.002, and
+top-folder share ρ=−0.51, p=0.045. In vaults where a few folders hold most
+notes, kNN gains on the cascade. That is 2 hits in 30 tests, it does not
+replicate on B (ρ=−0.16), and the corpus is n=16. Exploratory only.
+
+**10. Inclusion accounting.**
+
+| step | B | A′ |
+|---|---|---|
+| repos passing structural probe | 132 | 132 |
+| classified personal / software | 37 / 95 | — / 95 (89 usable) |
+| reference-work denylist removed | 10 | — |
+| selected (spread across sizes) | 27 | 25 |
+| built (clone succeeded) | 27 | 16 (9 timed out at 180 s) |
+| capped at 250 notes, file order | 10 | — |
+
+The nine A′ timeouts are not random. They are larger and more popular repos
+than the 16 that built: median 4,458 stars vs 376, 91 folders vs 45, 1,039
+files vs 814. A′ therefore under-represents large, popular repositories.
+State this as a selection effect.
+
+---
+
+### Pre-specified follow-up runs (written 2026-10-01, before any spend)
+
+Written and committed before any of these runs start, so the git timestamp
+shows every design choice below was fixed before its results existed. Any
+deviation gets logged here with a reason; nothing is dropped silently.
+Smoke tests (`--limit` ≤ 5 items) check the pipeline only and are excluded
+from every reported number.
+
+**Fixed across all runs.** Exact match is the primary metric. Soft hit is
+secondary. Intervals are vault-clustered bootstrap, 10,000 replicates, seed 0,
+via `vault_level_robustness.py`. kNN is k=5 on every corpus; A′'s k=12 is
+dropped in favour of the uniform value. Every comparison is reported whatever
+its sign.
+
+**Shortlist rule.** Use the smallest N in {20, 50} whose path candidate
+recall on the split's validation set is at least 0.90; otherwise use 50. This
+reproduces every earlier choice: B folder split 0.929@20 gives 20; corpus A
+folder split 0.677@20 and 0.844@50 gives 50. For A′'s folder split,
+0.768@20 and 0.958@50 gives **path@50**. path@20 also runs on A′, as a
+labelled sensitivity arm only.
+
+**R1. A′ folder-disjoint split.** A′ had no folder-disjoint split, so the
+protocol was incomplete there. Data:
+`data/vaultsA_build/*/fold_{train,val}.jsonl`, n=1,264. Arms:
+- gpt-4o cascade at path@50 (primary) and path@20 (sensitivity)
+- flat gpt-4o
+- Llama-3.3-70B cascade at path@50, via OpenRouter, the same provider as
+  the B runs
+- LoRA trained on A′ `fold_train` with the corpus recipe (epochs 1, rank 16,
+  lr 1e-4, maxContextLength 16384)
+- path-only top-1 and kNN, which is 0 by construction
+
+Expectation from B, stated before running: cascade ≥ flat > LoRA.
+
+**R2. A′ item split, flat gpt-4o.** n=797. This
+fills the one missing A′ cell.
+
+**R3. Folder-description retrieval baseline,** on the folder-disjoint
+splits of B and A′. gpt-4o-mini writes one line per folder from **the path
+string only**. Unseen folders have no members, so any content-derived
+description would leak the answer. Embed the descriptions and take the
+top-1. This is compared with path-only top-1 and with the cascade. No
+direction is predicted.
+
+**R4. Member-grounded picker.** PaperRouter-Agent, the closest prior
+system, has no public code, so this reimplements its core idea. B item
+split, n=1,469. It is the gpt-4o cascade with an identical note@20 shortlist, plus up to 2 training notes per shortlisted
+folder: the ones nearest the incoming note, 300 characters each. The prompt,
+parser and scorer are otherwise unchanged. Only training notes are shown, so
+nothing leaks. Primary comparison: paired difference against the existing
+cascade, overall and by bucket, two-sided.
+
+**R5. Per-vault LoRA.** Tests whether pooled cross-vault training explains
+LoRA's lead on the public corpora, and the cross-corpus reversal. Item split, one adapter per vault: 27 for B and 16 for A′. Each adapter trains
+only on its own vault's `train.jsonl`. Primary recipe is identical to the
+pooled adapters (epochs 1), so the only thing that changes is the training
+pool. A secondary run at epochs 3 checks that the per-vault adapters are not
+just under-trained.
+
+Serving is a confound, so it is controlled:
+- Every per-vault adapter is evaluated on one BF16 multi-LoRA deployment.
+- The existing pooled adapters (`placer-vaultb-item`, `placer-vaultsa-item`)
+  are loaded on that same deployment and re-scored.
+- Per-vault vs pooled is compared within that one deployment.
+- Re-served pooled vs the originally published pooled is reported as a
+  serving-noise check.
+
+Readout: the vault-clustered paired difference (per-vault − pooled) and
+(per-vault − cascade) per corpus. If the per-vault − pooled interval is below
+zero, cross-vault training volume contributes to LoRA's public-corpus lead.
+Whether per-vault − cascade moves toward corpus A's sign (cascade ahead) bears
+on the reversal.
+
+**H1. Gold-label audit on B.** Two annotators, the same protocol
+as corpus A, except that annotators read each note through a GitHub
+permalink at the pinned commit instead of a copied excerpt, so no third-party
+text is redistributed. They see the note plus the recorded folder, no model output, verdict in
+{correct, ambiguous, unclear, wrong}. 100 notes, stratified by occupancy
+bucket, including occupancy 0 from the folder split. Report Cohen's κ.
+
+**H2. Alternative-folder audit.** 50 items where at least one
+method's prediction is wrong. The annotators see the note, the recorded
+folder and one wrong prediction, without knowing which method made it. The
+question: would the predicted folder also be a sensible home? This gives a
+lenient accuracy next to exact match.
+
+**H3. Vault-filter audit.** 40 repos, 20 per classifier label,
+drawn with seed 0. Each annotator labels each repo from its GitHub page as a
+personal note collection or not. Report the error rate for each class, with
+a Wilson interval.
+
+**Not in scope, stated as limitations:** a fresh held-out vault set, a
+randomly capped rebuild, retrying the timed-out clones, and downstream QA
+validation.
+
+---
+
 ### Cross-vault leakage check (2026-08-19)
 
 Raised in adversarial review: corpus B/A′ train sets are pooled across
@@ -832,11 +1060,12 @@ omits them:
   tasks) — a construct-validity concern for calling it a general "personal
   directory" corpus. It's one person's real tree, not a designed sample.
 - **Corpus A′ lost 9/25 selected repos to clone timeouts** and **corpus B
-  capped 9/27 vaults at 250 notes, taken in file order, not randomly** — both
-  are selection steps that could shift measured occupancy and tree size as
-  a side effect of which specific files survived, not a random sampling
-  artifact. No sensitivity analysis run against uncapped/randomly-capped
-  alternatives.
+  capped 10/27 vaults at 250 notes, taken in file order, not randomly** (first
+  recorded as 9; recounted from META.json on 2026-10-01) — both are selection
+  steps that could shift measured occupancy and tree size as a side effect of
+  which specific files survived, not a random sampling artifact. An
+  exclude-the-capped-vaults sensitivity check is in "Vault-level
+  robustness" above; a randomly-capped rebuild has not been run.
 - **Occupancy and tree size are confounded with candidate-set size.** The
   cascade sees a top-20 shortlist; LoRA and kNN effectively see the whole
   tree. In small trees those are nearly the same list; in large trees they

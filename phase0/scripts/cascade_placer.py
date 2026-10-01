@@ -83,6 +83,15 @@ def main() -> None:
         "belongs here' instead of a bare path. Only valid when the descriptions "
         "were built from files the eval never sees; see gen_folder_descriptions.py",
     )
+    ap.add_argument(
+        "--member-snippets",
+        type=int,
+        default=0,
+        help="show up to N training notes per candidate folder, the ones nearest the "
+        "incoming note, so the picker reads what a folder holds rather than only its "
+        "name (content-grounded, as in PaperRouter-Agent). 0 = bare paths",
+    )
+    ap.add_argument("--snippet-chars", type=int, default=300)
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument(
@@ -115,7 +124,11 @@ def main() -> None:
     dv = norm(emb.embed_texts([path_text(d) for d in all_dirs]))
     train_dirs = [key(t["gold_path"]) for t in train]
     dir_keys = [key(d) for d in all_dirs]
-    note_order = np.argsort(-(vv @ tv.T), axis=1)
+    note_sim = vv @ tv.T
+    note_order = np.argsort(-note_sim, axis=1)
+    members: dict[str, list[int]] = {}
+    for j, k in enumerate(train_dirs):
+        members.setdefault(k, []).append(j)
     path_order = np.argsort(-(vv @ dv.T), axis=1)
 
     def dedup(seq):
@@ -169,6 +182,14 @@ def main() -> None:
                 {"path": unkey(k), "contains": descs[k]} if descs.get(k) else {"path": unkey(k)}
                 for k in ckeys
             ]
+        if args.member_snippets:
+            # training notes only, so nothing from the val set reaches the prompt;
+            # a folder with no training note (folder split) is shown as a bare path
+            shortlist = []
+            for k in ckeys:
+                near = sorted(members.get(k, []), key=lambda j: -note_sim[i][j])
+                ex = [train[j]["text"][: args.snippet_chars] for j in near[: args.member_snippets]]
+                shortlist.append({"path": unkey(k), "examples": ex} if ex else {"path": unkey(k)})
         in_list = key(v["gold_path"]) in set(ckeys)
         try:
             pred = probe.call_placer(
@@ -210,6 +231,8 @@ def main() -> None:
     summary = {
         "mode": args.mode,
         "n_candidates": args.n,
+        "member_snippets": args.member_snippets,
+        "snippet_chars": args.snippet_chars if args.member_snippets else None,
         "model": args.model,
         "provider": args.provider,
         "max_depth": max_depth,

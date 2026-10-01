@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def run_one(
     snap: Path, split: str, mode: str, n: int, model: str, provider: str,
-    workers: int, out: Path,
+    workers: int, out: Path, extra: list[str] | None = None,
 ) -> dict | None:
     pre = "fold_" if split == "folder" else ""
     train, val, store = snap / f"{pre}train.jsonl", snap / f"{pre}val.jsonl", snap / "hierstore.sqlite"
@@ -33,7 +33,7 @@ def run_one(
          "--train", str(train), "--val", str(val), "--store", str(store),
          "--mode", mode, "--n", str(n),
          "--model", model, "--provider", provider,
-         "--workers", str(workers), "--out", str(out)],
+         "--workers", str(workers), "--out", str(out), *(extra or [])],
         capture_output=True, text=True, cwd=ROOT, timeout=3600,
     )
     if p.returncode != 0:
@@ -54,7 +54,15 @@ def main() -> None:
     ap.add_argument("--provider", default="openai")
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--only-split", choices=["item", "folder", "both"], default="both")
+    ap.add_argument("--member-snippets", type=int, default=0,
+                    help="passed to cascade_placer.py; also tags the run dirs")
+    ap.add_argument("--limit", type=int, default=0, help="smoke test: items per vault")
     args = ap.parse_args()
+    extra = []
+    if args.member_snippets:
+        extra += ["--member-snippets", str(args.member_snippets)]
+    if args.limit:
+        extra += ["--limit", str(args.limit)]
 
     snaps = sorted(d for d in args.build.iterdir()
                    if d.is_dir() and (d / "hierstore.sqlite").exists())
@@ -69,9 +77,9 @@ def main() -> None:
 
     for split, mode, n in jobs:
         for i, snap in enumerate(snaps, 1):
-            tag = f"{snap.name}__{split}_{mode}{n}"
+            tag = f"{snap.name}__{split}_{mode}{n}" + (f"_mem{args.member_snippets}" if args.member_snippets else "")
             r = run_one(snap, split, mode, n, args.model, args.provider,
-                        args.workers, args.out / tag)
+                        args.workers, args.out / tag, extra)
             if r:
                 per_vault.setdefault(snap.name, {})[split] = r
                 pf = r.get("n_parse_fail", 0)

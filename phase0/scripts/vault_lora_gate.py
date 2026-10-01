@@ -4,6 +4,11 @@
 Each vault keeps its own store, so existing_dirs must be read per vault, not
 shared. Calls eval_fireworks_placer.py once per vault with --store pointed at
 that vault's hierstore.sqlite. Pools per item, same as the other vault gates.
+
+--model scores every vault with one route (pooled adapter); --model-map takes a
+JSON {vault name: route} so each vault is scored with its own per-vault adapter
+(see fireworks_lora_batch.py model-map). A vault missing from the map is skipped
+and reported, never silently scored with some other adapter.
 """
 from __future__ import annotations
 
@@ -41,18 +46,28 @@ def main() -> None:
     ap.add_argument("--build", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--split", choices=["item", "folder"], required=True)
-    ap.add_argument("--model", required=True, help="model#deployment route")
+    g = ap.add_mutually_exclusive_group(required=True)
+    g.add_argument("--model", help="model#deployment route, used for every vault")
+    g.add_argument("--model-map", type=Path,
+                   help="JSON {vault name: model#deployment route}, one adapter per vault")
     ap.add_argument("--provider", default="fireworks")
     ap.add_argument("--workers", type=int, default=4)
     args = ap.parse_args()
 
     snaps = sorted(d for d in args.build.iterdir()
                    if d.is_dir() and (d / "hierstore.sqlite").exists())
+    model_map = json.loads(args.model_map.read_text()) if args.model_map else None
+    if model_map is not None:
+        missing = [s.name for s in snaps if s.name not in model_map]
+        if missing:
+            print(f"  not in model map, skipped: {missing}", file=sys.stderr)
+        snaps = [s for s in snaps if s.name in model_map]
     args.out.mkdir(parents=True, exist_ok=True)
     per_vault: dict[str, dict] = {}
 
     for i, snap in enumerate(snaps, 1):
-        r = run_one(snap, args.split, args.model, args.provider, args.workers,
+        r = run_one(snap, args.split,
+                     model_map[snap.name] if model_map else args.model, args.provider, args.workers,
                      args.out / snap.name)
         if r:
             per_vault[snap.name] = r

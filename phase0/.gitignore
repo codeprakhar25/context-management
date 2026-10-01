@@ -24,7 +24,13 @@ data/vaultsA_build/
 data/sft_placer_vaultB_item/
 data/sft_placer_vaultB_fold/
 data/sft_placer_vaultsA_item/
+data/sft_placer_vaultsA_fold/
+data/sft_placer_per_vault/
 data/annotation_sample_A.json
+data/annotation_sample_B.json
+data/annotation_alternatives_B.json
+# per-annotator sheets, vault folder lists, and keys for the corpus-B annotation (H1-H3)
+data/annotation_B/
 data/mine-results-corrected.json
 
 # corpus A itself: the user's own private working directory. Full note
