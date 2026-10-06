@@ -1008,6 +1008,88 @@ cause stays open, with one candidate now weakened.
 one H200 multi-LoRA deployment, deleted afterwards; the deployment list was
 confirmed empty.
 
+### Results of the annotation audits (2026-10-06)
+
+Two annotators, each blind to the other, labelled the H1 to H3 sheets through GitHub permalinks at the pinned commits. Every item
+was labelled by both; none is missing. H1 and H3 show no model
+output; H2 shows one wrong prediction without naming the method that made it.
+Scored with `scripts/score_annotation_B.py`.
+
+**H1. Corpus B gold labels (100 notes).**
+
+| annotator | correct | ambiguous | unclear | wrong |
+|---|---|---|---|---|
+| annotator 1 | 90 | 6 | 4 | 0 |
+| annotator 2 | 94 | 1 | 5 | 0 |
+
+Exact agreement 90/100, usable-vs-not agreement 93/100, no item called
+correct by one annotator and wrong by the other. Cohen's κ is 0.339; with
+90% or more of verdicts "correct" for both annotators, chance agreement is
+0.849, which caps κ. The prevalence-adjusted value (PABAK, four categories)
+is 0.867. 90 to 94% of sampled gold paths are a clean "correct", 95 to 96%
+counting ambiguous (Wilson lower bound 0.888). Disagreement sits in the
+folder-disjoint bucket (30/35 agree) and the dense bucket (17/22); the sparse
+and mid buckets agree 18/18 and 25/25. Corpus A's pattern, where the sparse
+bucket was weakest, does not repeat on B: B's sparse-bucket results are not
+measured against noisier labels.
+
+**H2. Alternative folders (50 wrong predictions).** Agreement 35/50,
+κ = 0.503. Share of judgments calling the wrong prediction a sensible home,
+with the lenient accuracy it implies over B's item split
+(exact + (1 − exact) × share, share reweighted by each method's wrong-count
+per bucket):
+
+| method | items | sensible (yes) | lenient | sensible (yes+partly) | lenient | exact |
+|---|---|---|---|---|---|---|
+| bare cascade | 25 | 0.680 | 0.867 | 0.920 | 0.966 | 0.592 |
+| kNN | 13 | 0.500 | 0.840 | 0.692 | 0.901 | 0.716 |
+| LoRA | 12 | 0.333 | 0.807 | 0.500 | 0.873 | 0.756 |
+
+The bare cascade's errors are more often a defensible second home than
+LoRA's or kNN's, and under lenient scoring its exact-match deficit (12
+points behind kNN, 16 behind LoRA) disappears. Two caveats keep this from being a ranking claim. The
+per-method samples are 12 to 25 items, and the shares pool both annotators'
+judgments of the same item, so intervals on them are too narrow and we give
+none on the lenient numbers. And the sample covers the bare cascade,
+kNN and LoRA only, so it says nothing about the member-grounded picker. What it
+does show is that exact match against one folder of record penalises the
+bare cascade more than the other methods.
+
+**H3. Vault filter (40 repos, 20 per classifier label).** Agreement 37/40,
+κ = 0.846.
+
+| classifier label | error, annotator 1 | error, annotator 2 | error, consensus |
+|---|---|---|---|
+| personal | 6/20 | 7/20 | 6/19 (0.316, Wilson [0.154, 0.540]) |
+| software | 4/20 | 2/20 | 2/18 (0.111, Wilson [0.031, 0.328]) |
+
+The filter admits collections that are not one person's notes: shared
+reference collections (two game-rulebook dumps among them) and repositories
+of a tool or product. About one in three repos it calls personal is not, by
+consensus. 15 of the 40 audited repos are corpus B
+vaults; both annotators called 11 personal and 3 not (drshahizan/obsidian,
+gl0bal01/intel-codex, phuryn/pm-brain), and split on 1 (GcsSloop/AndroidNote).
+Corpus B's rate (3 of 14 decided) is lower than the classifier's overall rate
+because the other three consensus-not repos (two rulebook conversions and
+retypeapp/retype) are removed by the deny-list in `select_vaults.py`.
+Of the software-labelled repos, 2 were judged personal by both annotators;
+neither is in A′. One A′ repo (davekilleen/Dex) is a split decision.
+
+**Post-hoc sensitivity, not pre-specified.** Corpus B rerun from stored
+predictions without the 3 non-personal vaults (130 items, 24 vaults left),
+and without those plus the split vault (150 items, 23 left):
+
+| | all vaults | without 3 | without 4 |
+|---|---|---|---|
+| cascade − kNN, 1-2 | +0.171 [+0.098, +0.244] | +0.184 [+0.096, +0.275] | +0.175 [+0.087, +0.265] |
+| cascade − kNN, 10+ | −0.419 [−0.626, −0.140] | −0.423 [−0.634, −0.136] | −0.429 [−0.638, −0.147] |
+| grounded − kNN, all | +0.082 [+0.022, +0.148] | +0.078 [+0.015, +0.151] | +0.077 [+0.011, +0.150] |
+| grounded − LoRA, all | +0.043 [−0.020, +0.118] | +0.048 [−0.021, +0.129] | +0.045 [−0.024, +0.128] |
+| grounded, all | 0.799 | 0.808 | 0.807 |
+
+Every corpus B conclusion survives. The non-personal vaults were not driving
+the crossing or the grounded picker's lead.
+
 ---
 
 ### Cross-vault leakage check (2026-08-19)
@@ -1070,7 +1152,9 @@ same shape as the model coverage curve), 3–9 19/25 (76%), 10+ 20/22 (91%).
 
 **Two scope limits, flagged in adversarial review, kept explicit rather than
 implied:**
-1. **This validates corpus A's gold only.** Corpus B and A′ were never
+1. **This validates corpus A's gold only.** (Superseded for corpus B on
+   2026-10-06: B's gold labels were audited through permalinks, see "Results
+   of the annotation audits". A′ remains unaudited.) Corpus B and A′ were never
    annotated (external-annotator exposure to other people's public-vault
    text was ruled out on licensing grounds). A high
    κ on A says nothing directly about whether B's or A′'s folder-of-record

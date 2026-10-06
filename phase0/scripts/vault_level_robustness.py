@@ -50,6 +50,10 @@ RUNS = ROOT / "runs"
 CACHE = RUNS / "_embed_cache" / "candidate_recall.json"
 BUCKETS = ["1-2", "3-9", "10+", "all"]
 K_GRID = [1, 3, 5, 8, 12]
+# H3 filter audit (PLACER_FINDINGS.md): corpus-B vaults both annotators judged not a personal
+# note collection, and the one they split on. Used for a post-hoc sensitivity check only.
+H3_NOT_PERSONAL = ["drshahizan__obsidian", "gl0bal01__intel-codex", "phuryn__pm-brain"]
+H3_SPLIT = ["gcssloop__androidnote"]
 
 CORPORA = {
     "B": {
@@ -459,6 +463,15 @@ def main() -> None:
             rep["exact_excluding_capped"] = by_bucket(uncapped, arms, args.reps, args.seed)
             rep["exact_excluding_capped_and_outliers"] = by_bucket(no_outl, arms, args.reps, args.seed)
             print(fmt(f"\n=== corpus B excluding {len(capped)} capped vaults ===", rep["exact_excluding_capped"], arms))
+            for tag, drop in (("h3_not_personal", H3_NOT_PERSONAL), ("h3_not_personal_or_split", H3_NOT_PERSONAL + H3_SPLIT)):
+                kept = [r for r in rows if r["vault"].lower() not in drop]
+                rep[f"excluding_{tag}"] = {
+                    "dropped_items": len(rows) - len(kept),
+                    "exact": by_bucket(kept, arms, args.reps, args.seed),
+                    "crossing_cascade_vs_kNN": crossing_per_vault(kept, "cascade", "kNN"),
+                }
+                print(fmt(f"\n=== corpus B excluding {tag} ({len(rows) - len(kept)} items) ===",
+                          rep[f"excluding_{tag}"]["exact"], arms))
 
         if CORPORA[corpus]["fold_arms"]:
             frows = fold_rows(corpus, emb)
